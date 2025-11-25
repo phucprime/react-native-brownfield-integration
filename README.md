@@ -602,7 +602,6 @@ npm run bundle:android
 
 For projects using the legacy integration pattern, see the following directories:
 
-- `react-native-bundle/` - Legacy JavaScript bundle
 - `ios/RNBridge/` - Legacy iOS bridge components
 - `android/app/` - Legacy Android bridge components
 
