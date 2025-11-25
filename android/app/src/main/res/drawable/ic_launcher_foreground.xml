@@ -1,0 +1,39 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:scaleX="0.65"
+        android:scaleY="0.65"
+        android:translateX="18.9"
+        android:translateY="18.9">
+        <!-- React logo inspired design -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M54,30c-13.255,0 -24,10.745 -24,24s10.745,24 24,24s24,-10.745 24,-24S67.255,30 54,30zM54,70c-8.837,0 -16,-7.163 -16,-16s7.163,-16 16,-16s16,7.163 16,16S62.837,70 54,70z"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M54,48c-3.314,0 -6,2.686 -6,6s2.686,6 6,6s6,-2.686 6,-6S57.314,48 54,48z"/>
+        <path
+            android:strokeWidth="2"
+            android:strokeColor="#FFFFFF"
+            android:fillColor="#00000000"
+            android:pathData="M54,20c30,0 34,34 34,34s4,34 -34,34s-34,-34 -34,-34S24,20 54,20z"/>
+        <path
+            android:strokeWidth="2"
+            android:strokeColor="#FFFFFF"
+            android:fillColor="#00000000"
+            android:pathData="M30,54c0,-30 34,-34 34,-34s34,-4 34,34s-34,34 -34,34S30,84 30,54z"
+            android:rotation="60"
+            android:pivotX="54"
+            android:pivotY="54"/>
+        <path
+            android:strokeWidth="2"
+            android:strokeColor="#FFFFFF"
+            android:fillColor="#00000000"
+            android:pathData="M30,54c0,-30 34,-34 34,-34s34,-4 34,34s-34,34 -34,34S30,84 30,54z"
+            android:rotation="-60"
+            android:pivotX="54"
+            android:pivotY="54"/>
+    </group>
+</vector>

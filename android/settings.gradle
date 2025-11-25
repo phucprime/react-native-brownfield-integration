@@ -1,0 +1,10 @@
+rootProject.name = 'RNBridgeDemo'
+
+include ':app'
+
+// Include React Native from the MyRNFramework
+apply from: file("../MyRNFramework/node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+applyNativeModulesSettingsGradle(settings, "../MyRNFramework")
+
+// Include the React Native dependency
+includeBuild("../MyRNFramework/node_modules/@react-native/gradle-plugin")
