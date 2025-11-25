@@ -69,53 +69,39 @@ Package React Native as a framework (XCFramework/AAR) and embed it into existing
 
 ```
 react-native-brownfield-integration/
-├── MyRNFramework/              # React Native framework source
-│   ├── src/App.tsx             # React Native UI components
-│   ├── index.ts                # Entry point
-│   ├── package.json            # Dependencies & scripts
-│   ├── ios/                    # iOS demo (runnable with RN bundled)
-│   │   ├── MyRNFramework.xcodeproj
+├── MyRNFramework/                  # React Native framework source
+│   ├── src/App.tsx                 # React Native UI components
+│   ├── index.ts                    # Entry point (AppRegistry.registerComponent)
+│   ├── package.json                # Dependencies & scripts
+│   ├── ios/                        # iOS demo app
 │   │   ├── Podfile
 │   │   └── MyRNFramework/
-│   │       ├── AppDelegate.swift
-│   │       ├── ReactNativeView.swift
-│   │       └── NativeModule.swift
-│   └── android/                # Android demo (runnable with RN bundled)
-│       ├── app/build.gradle
-│       └── src/main/java/com/myrnframework/
-│           ├── MainActivity.kt
-│           └── MainApplication.kt
+│   │       ├── AppDelegate.swift   # ReactNativeBrownfield.shared.startReactNative()
+│   │       ├── ReactNativeView.swift # Re-exports library components
+│   │       └── NativeModule.swift  # Custom native module example
+│   └── android/                    # Android demo app
+│       └── app/src/main/java/com/myrnframework/
+│           ├── MainApplication.kt  # ReactNativeBrownfield.initialize()
+│           └── MainActivity.kt     # ReactNativeBrownfield.shared.createView()
 │
-├── ios/                        # iOS native host app demo (RNBridge library)
-│   ├── RNBridge.xcodeproj      # Xcode project
-│   ├── Podfile                 # CocoaPods dependencies
-│   ├── RNBridge/               # Bridge library source
-│   │   ├── RNBridgeManager.swift
-│   │   ├── RNBridgeViewController.swift
-│   │   └── BrownfieldBridgeModule.swift
-│   └── RNBridgeDemo/           # Demo app source
-│       ├── AppDelegate.swift
-│       ├── ViewController.swift
-│       └── Main.storyboard
+├── ios/                            # iOS native host app demo
+│   ├── Podfile                     # CocoaPods (includes react-native-brownfield)
+│   └── RNBridgeDemo/               # Demo app using library components
+│       ├── AppDelegate.swift       # ReactNativeBrownfield.shared.startReactNative()
+│       └── ViewController.swift    # ReactNativeViewController usage
 │
-├── android/                    # Android native host app demo (RNBridge library)
-│   ├── build.gradle
-│   ├── settings.gradle
-│   ├── app/
-│   │   ├── build.gradle
-│   │   └── src/main/
-│   │       ├── AndroidManifest.xml
-│   │       └── java/com/brownfield/
-│   │           ├── rnbridge/           # Bridge library
-│   │           │   ├── RNBridgeManager.kt
-│   │           │   ├── RNBridgeActivity.kt
-│   │           │   └── BrownfieldBridgeModule.kt
-│   │           └── rnbridge/demo/      # Demo app
-│   │               ├── MainActivity.kt
-│   │               └── MainApplication.kt
+├── android/                        # Android native host app demo
+│   ├── app/build.gradle
+│   └── app/src/main/java/com/brownfield/rnbridge/demo/
+│       ├── MainApplication.kt      # ReactNativeBrownfield.initialize()
+│       └── MainActivity.kt         # ReactNativeBrownfield.shared.createView()
 │
 └── README.md
 ```
+
+**Note:** This project uses `@callstack/react-native-brownfield` for all native bridge functionality.
+The library provides `ReactNativeBrownfield`, `ReactNativeView` (SwiftUI), `ReactNativeViewController` (UIKit),
+and `ReactNativeBrownfield.shared.createView()` (Android) - no custom bridge code needed.
 
 ## Quick Start
 
