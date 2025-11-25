@@ -46,14 +46,14 @@ Package React Native as a framework (XCFramework/AAR) and embed it into existing
 │              │                    │     │              │                    │
 │              ▼                    │     │              ▼                    │
 │  ┌─────────────────────────────┐  │     │  ┌─────────────────────────────┐  │
-│  │     RCTReactNativeFactory   │  │     │  │  ReactNativeBrownfieldShared│  │
-│  │     (React Native Bridge)   │  │     │  │     (React Native Bridge)   │  │
+│  │   ReactNativeBrownfield     │  │     │  │   ReactNativeBrownfield     │  │
+│  │   (@callstack library)      │  │     │  │   (@callstack library)      │  │
 │  └─────────────────────────────┘  │     │  └─────────────────────────────┘  │
 │              │                    │     │              │                    │
 │              ▼                    │     │              ▼                    │
 │  ┌─────────────────────────────┐  │     │  ┌─────────────────────────────┐  │
-│  │    SwiftUI / UIKit View     │  │     │  │  Jetpack Compose / Activity │  │
-│  │  (ReactNativeView wrapper)  │  │     │  │   (ReactRootView wrapper)   │  │
+│  │  ReactNativeView (SwiftUI)  │  │     │  │  Jetpack Compose / Activity │  │
+│  │  ReactNativeViewController  │  │     │  │   (createView wrapper)      │  │
 │  └─────────────────────────────┘  │     │  └─────────────────────────────┘  │
 │              │                    │     │              │                    │
 │              ▼                    │     │              ▼                    │
@@ -167,28 +167,57 @@ npm run package:android  # → AAR
 ### iOS (SwiftUI)
 
 ```swift
-// 1. Initialize in AppDelegate
-let delegate = ReactNativeDelegate()
-reactNativeFactory = RCTReactNativeFactory(delegate: delegate)
+import ReactBrownfield
 
-// 2. Embed in SwiftUI
+// 1. Initialize in AppDelegate
+func application(_ application: UIApplication, 
+                 didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    ReactNativeBrownfield.shared.startReactNative {
+        print("React Native bundle loaded")
+    }
+    return true
+}
+
+// 2. Embed in SwiftUI (iOS 14.0+)
+import SwiftUI
+import ReactBrownfield
+
 struct ContentView: View {
     var body: some View {
         ReactNativeView(moduleName: "MyRNFramework")
     }
 }
+
+// 3. Or use UIKit with ReactNativeViewController
+let rnViewController = ReactNativeViewController(moduleName: "MyRNFramework")
+navigationController?.pushViewController(rnViewController, animated: true)
 ```
 
 ### Android (Jetpack Compose)
 
 ```kotlin
-// 1. Initialize in Application
-ReactNativeBrownfieldShared.startReactNative(this, "index.android.bundle")
+import com.callstack.reactnativebrownfield.ReactNativeBrownfield
 
-// 2. Embed in Compose
+// 1. Initialize in Application.onCreate()
+class MainApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        val packages = PackageList(this).packages
+        ReactNativeBrownfield.initialize(this, packages) { initialized ->
+            Log.d("RN", "Bundle loaded: $initialized")
+        }
+    }
+}
+
+// 2. Embed in Jetpack Compose (requires FragmentActivity)
 @Composable
-fun MainScreen() {
-    ReactNativeScreen(moduleName = "MyRNFramework")
+fun ReactNativeComposeView(moduleName: String) {
+    val activity = LocalContext.current as FragmentActivity
+    AndroidView(
+        factory = { _ ->
+            ReactNativeBrownfield.shared.createView(activity, moduleName)
+        }
+    )
 }
 ```
 
@@ -197,8 +226,8 @@ fun MainScreen() {
 | Component | iOS | Android |
 |-----------|-----|---------|
 | **Framework** | XCFramework | AAR |
-| **Bridge** | RCTReactNativeFactory | ReactNativeBrownfieldShared |
-| **UI Integration** | SwiftUI / UIKit | Jetpack Compose / Activity |
+| **Bridge** | ReactNativeBrownfield | ReactNativeBrownfield |
+| **UI Integration** | ReactNativeView (SwiftUI) / ReactNativeViewController (UIKit) | createView() (Compose/Activity) |
 | **JS Engine** | Hermes | Hermes |
 | **Bundler** | Metro | Metro |
 | **Packaging** | Rock CLI | Rock CLI |
