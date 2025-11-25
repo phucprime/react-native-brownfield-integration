@@ -598,14 +598,6 @@ Android:
 npm run bundle:android
 ```
 
-## Legacy Integration
-
-For projects using the legacy integration pattern, see the following directories:
-
-- `react-native-bundle/` - Legacy JavaScript bundle
-- `ios/RNBridge/` - Legacy iOS bridge components
-- `android/app/` - Legacy Android bridge components
-
 ## Best Practices
 
 1. **Initialize Early**: Initialize React Native in your app's startup sequence
