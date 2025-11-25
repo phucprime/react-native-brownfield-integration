@@ -5,7 +5,7 @@ plugins {
 }
 
 /**
- * React Native Brownfield Configuration
+ * React Native 0.78+ Brownfield Configuration
  * 
  * This build configuration supports:
  * - Standard React Native development and testing
@@ -31,19 +31,17 @@ react {
     //   If you are not using Hermes and want to bundle with Metro, uncomment the following line:
     // bundleIn = ["debug"]
 
-    /* Hermes & Flipper */
-    //   Enable Hermes by default (recommended for performance)
+    /* Hermes is the only supported engine in RN 0.78+ */
     hermesEnabled = true
-    //   Enable Flipper for debug builds
-    debuggableVariants = ["debug"]
     
-    /* Autolinking */
-    autolinkLibrariesWithApp()
+    /* Autolinking - Updated for RN 0.78+ */
+    autolinkLibrariesFromCommand()
 }
 
 android {
     namespace "com.myrnframework"
     compileSdk rootProject.ext.compileSdkVersion
+    ndkVersion rootProject.ext.ndkVersion
 
     defaultConfig {
         applicationId "com.myrnframework"
@@ -62,7 +60,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     buildTypes {
@@ -106,20 +104,21 @@ dependencies {
     implementation("com.callstack.reactnativeshared:react-native-brownfield-shared:latest.release")
     
     // AndroidX core dependencies
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.multidex:multidex:2.0.1")
     
-    // Jetpack Compose for modern UI integration
-    implementation("androidx.compose.ui:ui:1.6.0")
-    implementation("androidx.compose.material3:material3:1.2.0")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.0")
+    // Jetpack Compose for modern UI integration (BOM for version alignment)
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.activity:activity-compose:1.9.1")
+    debugImplementation("androidx.compose.ui:ui-tooling")
     
     // Optional: Add for advanced brownfield features
-    // implementation("androidx.navigation:navigation-compose:2.7.6")
+    // implementation("androidx.navigation:navigation-compose:2.7.7")
 }
 
 // Apply native modules configuration from React Native CLI

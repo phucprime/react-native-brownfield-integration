@@ -7,7 +7,7 @@
   
   "ios": {
     "bundleIdentifier": "com.myrnframework",
-    "deploymentTarget": "13.4",
+    "deploymentTarget": "15.1",
     "xcframeworkName": "MyRNFramework",
     "buildConfiguration": "Release",
     "jsBundleName": "main",
@@ -21,9 +21,9 @@
   
   "android": {
     "packageName": "com.myrnframework",
-    "minSdkVersion": 23,
-    "targetSdkVersion": 34,
-    "compileSdkVersion": 34,
+    "minSdkVersion": 24,
+    "targetSdkVersion": 35,
+    "compileSdkVersion": 35,
     "aarName": "myrnframework",
     "jsBundleName": "index.android.bundle",
     "entryFile": "index.ts",

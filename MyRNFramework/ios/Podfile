@@ -1,15 +1,20 @@
 # Podfile for MyRNFramework
-# React Native brownfield integration with Rock framework packaging support
+# React Native 0.78+ brownfield integration with Rock framework packaging support
 #
 # This Podfile is configured for:
 # 1. Standard React Native development
 # 2. XCFramework packaging via Rock CLI for distribution
 # 3. Integration into existing native iOS applications
 
-require_relative '../node_modules/react-native/scripts/react_native_pods'
-require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
 
-platform :ios, '13.4'
+# Minimum iOS 15.1 required for React Native 0.78+
+platform :ios, '15.1'
 prepare_react_native_project!
 
 # Framework configuration for brownfield integration
@@ -25,12 +30,6 @@ target 'MyRNFramework' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # Enables Flipper for debug builds (disable for release/framework packaging)
-    :flipper_configuration => ENV['NO_FLIPPER'] == '1' ? FlipperConfiguration.disabled : FlipperConfiguration.enabled,
-    # Enable hermes engine (recommended for performance)
-    :hermes_enabled => true,
-    # Enable Fabric (New Architecture) - set to true when ready
-    :fabric_enabled => ENV['RCT_NEW_ARCH_ENABLED'] == '1',
     # An absolute path to your application root
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -43,16 +42,14 @@ target 'MyRNFramework' do
     react_native_post_install(
       installer,
       config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # Disable code signing for CI/CD and framework packaging
-      :ccache_enabled => false
+      :mac_catalyst_enabled => false
     )
     
     # Additional configuration for framework packaging
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        # Ensure minimum deployment target
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+        # Ensure minimum deployment target for RN 0.78+
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
         
         # Enable modules for Swift interoperability
         config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'

@@ -2,17 +2,16 @@
  * Metro configuration for MyRNFramework
  * 
  * This configuration is optimized for:
- * - React Native brownfield integration
+ * - React Native 0.78+ brownfield integration
  * - Framework packaging via Rock CLI
- * - TypeScript support
+ * - TypeScript support (built-in for RN 0.78+)
  * 
- * @see https://facebook.github.io/metro/docs/configuration
+ * @see https://reactnative.dev/docs/metro
  * @see https://www.rockjs.dev/docs/brownfield/intro
+ * @type {import('@react-native/metro-config').MetroConfig}
  */
 
 const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
-
-const defaultConfig = getDefaultConfig(__dirname);
 
 const config = {
   transformer: {
@@ -24,14 +23,9 @@ const config = {
       },
     }),
   },
-  resolver: {
-    // Add TypeScript extensions
-    sourceExts: [...defaultConfig.resolver.sourceExts, 'tsx', 'ts'],
-    // Asset extensions for bundling
-    assetExts: defaultConfig.resolver.assetExts.filter(ext => ext !== 'svg'),
-  },
+  // TypeScript extensions are built-in for RN 0.78+
   // For framework packaging, you may need to configure additional watchFolders
   // watchFolders: [],
 };
 
-module.exports = mergeConfig(defaultConfig, config);
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);

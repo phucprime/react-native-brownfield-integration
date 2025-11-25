@@ -17,32 +17,30 @@
     "clean": "rm -rf node_modules ios/Pods ios/build android/build android/app/build",
     "clean:ios": "rm -rf ios/Pods ios/build ios/main.jsbundle",
     "clean:android": "rm -rf android/build android/app/build android/app/src/main/assets/index.android.bundle",
-    "pod:install": "cd ios && pod install",
-    "pod:update": "cd ios && pod update",
+    "pod:install": "cd ios && bundle exec pod install",
+    "pod:update": "cd ios && bundle exec pod update",
     "test": "jest",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@callstack/react-native-brownfield": "latest",
-    "react": "18.2.0",
-    "react-native": "0.73.0"
+    "react": "19.0.0",
+    "react-native": "0.78.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@babel/preset-env": "^7.20.0",
-    "@babel/runtime": "^7.20.0",
-    "@react-native/babel-preset": "^0.73.0",
-    "@react-native/metro-config": "^0.73.0",
-    "@react-native/typescript-config": "^0.73.0",
-    "@types/react": "^18.2.0",
-    "@types/react-native": "^0.73.0",
-    "babel-jest": "^29.2.1",
-    "eslint": "^8.19.0",
-    "jest": "^29.2.1",
-    "metro-react-native-babel-preset": "^0.73.0",
-    "react-test-renderer": "18.2.0",
-    "typescript": "^5.0.0"
+    "@babel/core": "^7.25.0",
+    "@babel/preset-env": "^7.25.0",
+    "@babel/runtime": "^7.25.0",
+    "@react-native/babel-preset": "0.78.2",
+    "@react-native/metro-config": "0.78.2",
+    "@react-native/typescript-config": "0.78.2",
+    "@types/react": "^19.0.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "react-test-renderer": "19.0.0",
+    "typescript": "~5.3.0"
   },
   "jest": {
     "preset": "react-native"

@@ -205,7 +205,7 @@ Your Xcode Project
 
 Create or update your `Podfile`:
 ```ruby
-platform :ios, '14.0'
+platform :ios, '15.1'
 
 target 'YourApp' do
   use_frameworks! :linkage => :static
@@ -336,11 +336,11 @@ plugins {
 
 android {
     namespace = "com.yourapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
     }
     
     // Required for Compose
@@ -348,7 +348,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
 
@@ -485,7 +485,7 @@ startActivity(Intent(this, ReactNativeActivity::class.java))
 | AAR not found | Verify AAR is in `app/libs/` and `fileTree` is in `build.gradle` dependencies |
 | Crash on createView() | Ensure `ReactNativeBrownfield.initialize()` is called in `Application.onCreate()` |
 | "Module MyRNFramework not registered" | Module name must match `AppRegistry.registerComponent` in your RN code |
-| Gradle sync fails | Make sure compileSdk ≥ 34 and minSdk ≥ 24 |
+| Gradle sync fails | Make sure compileSdk ≥ 35 and minSdk ≥ 24 |
 
 ---
 
