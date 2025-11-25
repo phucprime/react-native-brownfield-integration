@@ -1,8 +1,6 @@
 package com.brownfield.rnbridge.demo
 
-import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,21 +8,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.brownfield.rnbridge.RNBridgeActivity
-import com.brownfield.rnbridge.RNBridgeManager
-import com.brownfield.rnbridge.RNBridgeView
+import androidx.fragment.app.FragmentActivity
+import com.callstack.reactnativebrownfield.ReactNativeBrownfield
 import com.brownfield.rnbridge.demo.ui.theme.RNBridgeDemoTheme
 
 /**
  * Main Activity demonstrating how to integrate React Native views
  * within a native Android application using Jetpack Compose.
+ * 
+ * Uses @callstack/react-native-brownfield for proper brownfield integration.
+ * Reference: https://github.com/callstack/react-native-brownfield/blob/main/docs/KOTLIN.md
  */
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +37,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainScreen(
-                        onOpenFullScreen = { openReactNativeFullScreen() },
-                        onOpenActivity = { openReactNativeActivity() }
+                        onOpenFullScreen = { openReactNativeFullScreen() }
                     )
                 }
             }
@@ -57,20 +57,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    
-    /**
-     * Opens React Native in a separate Activity
-     */
-    private fun openReactNativeActivity() {
-        val intent = Intent(this, RNBridgeActivity::class.java).apply {
-            putExtra(RNBridgeActivity.EXTRA_MODULE_NAME, "BrownfieldScreen")
-            putExtra(RNBridgeActivity.EXTRA_INITIAL_PROPS, Bundle().apply {
-                putString("title", "React Native Activity")
-                putString("source", "Android Activity")
-            })
-        }
-        startActivity(intent)
-    }
 }
 
 /**
@@ -78,8 +64,7 @@ class MainActivity : ComponentActivity() {
  */
 @Composable
 fun MainScreen(
-    onOpenFullScreen: () -> Unit,
-    onOpenActivity: () -> Unit
+    onOpenFullScreen: () -> Unit
 ) {
     var showEmbedded by remember { mutableStateOf(false) }
     
@@ -101,7 +86,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "This is a native Android app.\nChoose how to integrate React Native:",
+            text = "This is a native Android app using\n@callstack/react-native-brownfield.\nChoose how to integrate React Native:",
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -109,36 +94,20 @@ fun MainScreen(
         
         Spacer(modifier = Modifier.height(32.dp))
         
-        // Option 1: Open as Activity
-        Button(
-            onClick = onOpenActivity,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Open React Native Activity")
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // Option 2: Open Full Screen Composable
+        // Option 1: Open Full Screen Composable
         Button(
             onClick = onOpenFullScreen,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary
-            )
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Open Full Screen (Compose)")
+            Text("Open Full Screen React Native")
         }
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Option 3: Embed in Compose
+        // Option 2: Embed in Compose
         Button(
             onClick = { showEmbedded = !showEmbedded },
             modifier = Modifier
@@ -149,7 +118,7 @@ fun MainScreen(
                 containerColor = if (showEmbedded) 
                     MaterialTheme.colorScheme.error 
                 else 
-                    MaterialTheme.colorScheme.tertiary
+                    MaterialTheme.colorScheme.secondary
             )
         ) {
             Text(if (showEmbedded) "Remove Embedded View" else "Embed React Native View")
@@ -178,9 +147,8 @@ fun MainScreen(
         Spacer(modifier = Modifier.weight(if (showEmbedded) 0f else 1f))
         
         // Status indicator
-        val isReady = RNBridgeManager.isReady()
         Text(
-            text = if (isReady) "Bridge Ready ✅" else "Bridge Loading...",
+            text = "Using @callstack/react-native-brownfield ✅",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -190,25 +158,19 @@ fun MainScreen(
 }
 
 /**
- * Embedded React Native view using AndroidView
+ * Embedded React Native view using @callstack/react-native-brownfield
  */
 @Composable
 fun EmbeddedReactNativeView(
     moduleName: String,
-    modifier: Modifier = Modifier,
-    initialProps: Bundle? = null
+    modifier: Modifier = Modifier
 ) {
+    val activity = LocalContext.current as FragmentActivity
+    
     AndroidView(
-        factory = { context ->
-            RNBridgeView(context).apply {
-                setModuleName(moduleName)
-                setInitialProps(initialProps ?: Bundle().apply {
-                    putString("title", "Embedded RN View")
-                    putString("source", "Android Compose")
-                    putBoolean("compact", true)
-                })
-                startReactApplication()
-            }
+        factory = { _ ->
+            // Use official ReactNativeBrownfield.shared.createView() API
+            ReactNativeBrownfield.shared.createView(activity, moduleName)
         },
         modifier = modifier
     )
@@ -222,37 +184,29 @@ fun ReactNativeFullScreen(
     moduleName: String,
     onBack: () -> Unit
 ) {
-    var showBackButton by remember { mutableStateOf(true) }
+    val activity = LocalContext.current as FragmentActivity
     
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            factory = { context ->
-                RNBridgeView(context).apply {
-                    setModuleName(moduleName)
-                    setInitialProps(Bundle().apply {
-                        putString("title", "Full Screen RN")
-                        putString("source", "Android Full Screen")
-                    })
-                    startReactApplication()
-                }
+            factory = { _ ->
+                // Use official ReactNativeBrownfield.shared.createView() API
+                ReactNativeBrownfield.shared.createView(activity, moduleName)
             },
             modifier = Modifier.fillMaxSize()
         )
         
         // Back button overlay
-        if (showBackButton) {
-            Button(
-                onClick = onBack,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )
-            ) {
-                Text("← Back to Native")
-            }
+        Button(
+            onClick = onBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
+        ) {
+            Text("← Back to Native")
         }
     }
 }

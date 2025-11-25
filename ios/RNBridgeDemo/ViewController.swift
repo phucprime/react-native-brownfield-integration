@@ -3,13 +3,19 @@
 //  RNBridgeDemo
 //
 //  Main view controller demonstrating how to embed React Native views
-//  within a native iOS application.
+//  within a native iOS application using @callstack/react-native-brownfield.
+//
+//  Reference: https://github.com/callstack/react-native-brownfield/blob/main/docs/SWIFT.md
 //
 
 import UIKit
-import React
+import ReactBrownfield
 
 class ViewController: UIViewController {
+    
+    // MARK: - Constants
+    
+    private let moduleName = "BrownfieldScreen"
     
     // MARK: - UI Components
     
@@ -35,7 +41,7 @@ class ViewController: UIViewController {
     
     private lazy var openRNButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Open React Native Screen", for: .normal)
+        button.setTitle("Push React Native Screen", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
@@ -45,25 +51,28 @@ class ViewController: UIViewController {
         return button
     }()
     
-    private lazy var embedRNButton: UIButton = {
+    private lazy var presentRNButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Embed React Native View", for: .normal)
+        button.setTitle("Present React Native Modal", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
         button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(embedReactNativeView), for: .touchUpInside)
+        button.addTarget(self, action: #selector(presentReactNativeModal), for: .touchUpInside)
         return button
     }()
     
-    private lazy var statusLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 14)
-        label.textColor = .tertiaryLabel
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    private lazy var embedRNButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Embed React Native View", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.backgroundColor = .systemOrange
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 12
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(embedReactNativeView), for: .touchUpInside)
+        return button
     }()
     
     private var embeddedRNView: UIView?
@@ -75,14 +84,8 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = .systemBackground
+        title = "Native App"
         setupUI()
-        setupNotifications()
-        updateStatus()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        updateStatus()
     }
     
     // MARK: - Setup
@@ -91,8 +94,8 @@ class ViewController: UIViewController {
         view.addSubview(titleLabel)
         view.addSubview(descriptionLabel)
         view.addSubview(openRNButton)
+        view.addSubview(presentRNButton)
         view.addSubview(embedRNButton)
-        view.addSubview(statusLabel)
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
@@ -108,59 +111,53 @@ class ViewController: UIViewController {
             openRNButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
             openRNButton.heightAnchor.constraint(equalToConstant: 50),
             
-            embedRNButton.topAnchor.constraint(equalTo: openRNButton.bottomAnchor, constant: 16),
+            presentRNButton.topAnchor.constraint(equalTo: openRNButton.bottomAnchor, constant: 16),
+            presentRNButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
+            presentRNButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
+            presentRNButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            embedRNButton.topAnchor.constraint(equalTo: presentRNButton.bottomAnchor, constant: 16),
             embedRNButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             embedRNButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
             embedRNButton.heightAnchor.constraint(equalToConstant: 50),
-            
-            statusLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
         ])
-    }
-    
-    private func setupNotifications() {
-        // Listen for React Native navigation events
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleNavigateBack),
-            name: BrownfieldBridgeModule.navigateBackNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleDataChange(_:)),
-            name: BrownfieldBridgeModule.dataChangeNotification,
-            object: nil
-        )
-    }
-    
-    private func updateStatus() {
-        let status = RNBridgeManager.shared.isBridgeReady ? "Bridge Ready ✅" : "Bridge Loading..."
-        statusLabel.text = status
     }
     
     // MARK: - Actions
     
+    /// Opens React Native using ReactNativeViewController (push navigation)
     @objc private func openReactNativeScreen() {
-        let rnViewController = RNBridgeViewController(
-            moduleName: "BrownfieldScreen",
+        // Use the library's ReactNativeViewController
+        let rnViewController = ReactNativeViewController(
+            moduleName: moduleName,
             initialProperties: [
-                "title": "React Native Screen",
-                "source": "Native iOS"
+                "title": "Pushed RN Screen",
+                "source": "Native iOS (Push)"
+            ]
+        )
+        navigationController?.pushViewController(rnViewController, animated: true)
+    }
+    
+    /// Opens React Native using ReactNativeViewController (modal presentation)
+    @objc private func presentReactNativeModal() {
+        let rnViewController = ReactNativeViewController(
+            moduleName: moduleName,
+            initialProperties: [
+                "title": "Modal RN Screen",
+                "source": "Native iOS (Modal)"
             ]
         )
         rnViewController.modalPresentationStyle = .fullScreen
         present(rnViewController, animated: true)
     }
     
+    /// Embeds React Native view directly using ReactNativeBrownfield.shared.view()
     @objc private func embedReactNativeView() {
         if embeddedRNView != nil {
             // Remove existing embedded view
             removeEmbeddedRNView()
             embedRNButton.setTitle("Embed React Native View", for: .normal)
-            embedRNButton.backgroundColor = .systemGreen
+            embedRNButton.backgroundColor = .systemOrange
         } else {
             // Add embedded React Native view
             addEmbeddedRNView()
@@ -170,15 +167,17 @@ class ViewController: UIViewController {
     }
     
     private func addEmbeddedRNView() {
-        guard let rootView = RNBridgeManager.shared.createRootView(
-            moduleName: "BrownfieldScreen",
-            initialProperties: [
+        // Use ReactNativeBrownfield.shared.view() to create the view
+        guard let rootView = ReactNativeBrownfield.shared.view(
+            moduleName: moduleName,
+            initialProps: [
                 "title": "Embedded RN View",
-                "source": "Embedded in Native",
+                "source": "Native iOS (Embedded)",
                 "compact": true
-            ]
+            ],
+            launchOptions: nil
         ) else {
-            showAlert(title: "Error", message: "Failed to create React Native view")
+            showAlert(title: "Error", message: "Failed to create React Native view.\nEnsure ReactNativeBrownfield.shared.startReactNative() was called.")
             return
         }
         
@@ -198,7 +197,7 @@ class ViewController: UIViewController {
             containerView.topAnchor.constraint(equalTo: embedRNButton.bottomAnchor, constant: 30),
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            containerView.bottomAnchor.constraint(equalTo: statusLabel.topAnchor, constant: -20),
+            containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
             
             rootView.topAnchor.constraint(equalTo: containerView.topAnchor),
             rootView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
@@ -216,30 +215,11 @@ class ViewController: UIViewController {
         rnContainerView = nil
     }
     
-    // MARK: - Notification Handlers
-    
-    @objc private func handleNavigateBack() {
-        // Dismiss any presented React Native view controller
-        if presentedViewController is RNBridgeViewController {
-            dismiss(animated: true)
-        }
-    }
-    
-    @objc private func handleDataChange(_ notification: Notification) {
-        if let data = notification.userInfo?["data"] {
-            print("Received data from React Native: \(data)")
-        }
-    }
-    
     // MARK: - Helpers
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
     }
 }

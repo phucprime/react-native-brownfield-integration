@@ -2,11 +2,14 @@
 //  AppDelegate.swift
 //  RNBridgeDemo
 //
-//  Demo application showing how to integrate React Native using the RNBridge library.
+//  Demo application showing how to integrate React Native using
+//  @callstack/react-native-brownfield library.
+//
+//  Reference: https://github.com/callstack/react-native-brownfield/blob/main/docs/SWIFT.md
 //
 
 import UIKit
-import React
+import ReactBrownfield
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,18 +21,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         
-        // Initialize the React Native bridge
-        #if DEBUG
-        RNBridgeManager.shared.initialize(
-            source: .metro(host: "localhost", port: 8081),
-            launchOptions: launchOptions
-        )
-        #else
-        RNBridgeManager.shared.initialize(
-            source: .localBundle(filename: "main"),
-            launchOptions: launchOptions
-        )
-        #endif
+        // Initialize React Native using @callstack/react-native-brownfield
+        ReactNativeBrownfield.shared.startReactNative {
+            print("[RNBridgeDemo] React Native bundle loaded")
+        }
         
         return true
     }
@@ -48,15 +43,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didDiscardSceneSessions sceneSessions: Set<UISceneSession>
     ) {
-    }
-    
-    // MARK: - React Native URL Handling
-    
-    func application(
-        _ app: UIApplication,
-        open url: URL,
-        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-    ) -> Bool {
-        return RCTLinkingManager.application(app, open: url, options: options)
     }
 }

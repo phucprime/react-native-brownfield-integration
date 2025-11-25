@@ -35,8 +35,8 @@ target 'MyRNFramework' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # Add brownfield-specific pods if available
-  # pod 'react-native-brownfield', :path => '../node_modules/@callstack/react-native-brownfield'
+  # React Native Brownfield library for brownfield integration
+  pod 'react-native-brownfield', :path => '../node_modules/@callstack/react-native-brownfield'
 
   post_install do |installer|
     # React Native post install configuration

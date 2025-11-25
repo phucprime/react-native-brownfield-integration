@@ -2,103 +2,114 @@
 //  ReactNativeView.swift
 //  MyRNFramework
 //
-//  SwiftUI integration using UIViewRepresentable.
-//  Allows embedding React Native views in SwiftUI applications.
+//  SwiftUI and UIKit integration using @callstack/react-native-brownfield.
+//  
+//  The library provides:
+//  - ReactNativeView: SwiftUI component for embedding React Native
+//  - ReactNativeViewController: UIKit controller for embedding React Native
+//
+//  Reference: https://github.com/callstack/react-native-brownfield/blob/main/docs/SWIFT.md
 //
 
 import SwiftUI
 import UIKit
-import React
+import ReactBrownfield
 
-/// A SwiftUI view that wraps a React Native component.
-/// Use this to embed React Native content in SwiftUI applications.
-///
-/// Example usage:
+// MARK: - Re-export library components for convenience
+
+/// Re-export ReactNativeView from the brownfield library for SwiftUI usage.
+/// 
+/// Example:
 /// ```swift
 /// struct ContentView: View {
 ///     var body: some View {
-///         ReactNativeView(moduleName: "MyRNFramework")
-///             .frame(maxWidth: .infinity, maxHeight: .infinity)
+///         NavigationView {
+///             VStack {
+///                 Text("Welcome to Native App")
+///                 NavigationLink("Open React Native") {
+///                     ReactNativeView(moduleName: "MyRNFramework")
+///                         .navigationBarHidden(true)
+///                 }
+///             }
+///         }
 ///     }
 /// }
 /// ```
-public struct ReactNativeView: UIViewRepresentable {
-    
-    /// The name of the React Native module to display
-    public let moduleName: String
-    
-    /// Optional initial properties to pass to the React Native component
-    public var initialProperties: [AnyHashable: Any]?
-    
-    /// The React Native factory from the app delegate
-    private var reactNativeFactory: RCTReactNativeFactory? {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            return nil
-        }
-        return appDelegate.reactNativeFactory
-    }
-    
-    public init(moduleName: String = AppDelegate.moduleName, initialProperties: [AnyHashable: Any]? = nil) {
-        self.moduleName = moduleName
-        self.initialProperties = initialProperties
-    }
-    
-    public func makeUIView(context: Context) -> UIView {
-        guard let factory = reactNativeFactory else {
-            // Return a placeholder view if factory is not available
-            let placeholder = UIView()
-            placeholder.backgroundColor = .systemBackground
-            
-            let label = UILabel()
-            label.text = "React Native not initialized"
-            label.textColor = .systemRed
-            label.textAlignment = .center
-            label.translatesAutoresizingMaskIntoConstraints = false
-            
-            placeholder.addSubview(label)
-            NSLayoutConstraint.activate([
-                label.centerXAnchor.constraint(equalTo: placeholder.centerXAnchor),
-                label.centerYAnchor.constraint(equalTo: placeholder.centerYAnchor)
-            ])
-            
-            return placeholder
-        }
-        
-        // Create the React Native root view using the modern factory pattern
-        let rootView = factory.rootViewFactory.view(
-            withModuleName: moduleName,
-            initialProperties: initialProperties
-        )
-        
-        return rootView ?? UIView()
-    }
-    
-    public func updateUIView(_ uiView: UIView, context: Context) {
-        // Update the view if needed
-        // React Native handles most updates internally
-    }
-}
+public typealias RNView = ReactBrownfield.ReactNativeView
 
-/// A UIKit view controller that hosts a React Native view for use in UIKit apps.
-/// This provides an alternative to SwiftUI integration.
+/// Re-export ReactNativeViewController from the brownfield library for UIKit usage.
 ///
-/// Example usage:
+/// Example:
 /// ```swift
 /// let rnViewController = ReactNativeViewController(moduleName: "MyRNFramework")
 /// navigationController?.pushViewController(rnViewController, animated: true)
 /// ```
-public class ReactNativeViewController: UIViewController {
+public typealias RNViewController = ReactBrownfield.ReactNativeViewController
+
+// MARK: - Convenience extensions
+
+extension ReactNativeBrownfield {
     
-    /// The name of the React Native module to display
-    public let moduleName: String
+    /// Convenience method to create a React Native view with default module name
+    public func createView(initialProps: [AnyHashable: Any]? = nil) -> UIView? {
+        return view(
+            moduleName: AppDelegate.moduleName,
+            initialProps: initialProps,
+            launchOptions: nil
+        )
+    }
+}
+
+// MARK: - Custom SwiftUI wrapper (alternative if library import fails)
+
+/// Custom SwiftUI wrapper for React Native - use only if ReactBrownfield.ReactNativeView
+/// is not available (e.g., when library is not properly linked).
+@available(iOS 15.0, *)
+public struct MyReactNativeView: View {
+    @Environment(\.dismiss) var dismiss
     
-    /// Optional initial properties to pass to the React Native component
-    public var initialProperties: [AnyHashable: Any]?
+    let moduleName: String
+    let initialProperties: [String: Any]
     
-    /// The React Native root view
-    private var reactView: UIView?
+    public init(moduleName: String = AppDelegate.moduleName, initialProperties: [String: Any] = [:]) {
+        self.moduleName = moduleName
+        self.initialProperties = initialProperties
+    }
     
-    public init(moduleName: String = AppDelegate.moduleName, initialProperties: [AnyHashable: Any]? = nil) {
+    public var body: some View {
+        MyReactNativeViewRepresentable(
+            moduleName: moduleName,
+            initialProperties: initialProperties
+        )
+        .ignoresSafeArea(.all)
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("PopToNativeNotification"))) { _ in
+            dismiss()
+        }
+    }
+}
+
+/// UIViewControllerRepresentable bridge for SwiftUI
+struct MyReactNativeViewRepresentable: UIViewControllerRepresentable {
+    var moduleName: String
+    var initialProperties: [String: Any]
+    
+    func makeUIViewController(context: Context) -> UIViewController {
+        return MyReactNativeViewController(
+            moduleName: moduleName,
+            initialProperties: initialProperties
+        )
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+
+/// Custom UIViewController for React Native - fallback implementation
+public class MyReactNativeViewController: UIViewController {
+    
+    private let moduleName: String
+    private let initialProperties: [String: Any]?
+    
+    public init(moduleName: String = AppDelegate.moduleName, initialProperties: [String: Any]? = nil) {
         self.moduleName = moduleName
         self.initialProperties = initialProperties
         super.init(nibName: nil, bundle: nil)
@@ -110,64 +121,57 @@ public class ReactNativeViewController: UIViewController {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        setupReactNativeView()
+        
+        // Create view using ReactNativeBrownfield.shared.view()
+        if let reactView = ReactNativeBrownfield.shared.view(
+            moduleName: moduleName,
+            initialProps: initialProperties,
+            launchOptions: nil
+        ) {
+            view = reactView
+        } else {
+            showErrorState()
+        }
+        
+        // Listen for pop to native notification
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePopToNative),
+            name: NSNotification.Name("PopToNativeNotification"),
+            object: nil
+        )
     }
     
-    private func setupReactNativeView() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate,
-              let factory = appDelegate.reactNativeFactory else {
-            showErrorState()
-            return
+    @objc private func handlePopToNative(_ notification: Notification) {
+        let animated = (notification.userInfo?["animated"] as? Bool) ?? true
+        
+        if let navigationController = navigationController {
+            navigationController.popViewController(animated: animated)
+        } else {
+            dismiss(animated: animated)
         }
-        
-        let rootView = factory.rootViewFactory.view(
-            withModuleName: moduleName,
-            initialProperties: initialProperties
-        )
-        
-        guard let view = rootView else {
-            showErrorState()
-            return
-        }
-        
-        reactView = view
-        view.translatesAutoresizingMaskIntoConstraints = false
-        self.view.addSubview(view)
-        
-        NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: self.view.topAnchor),
-            view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            view.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            view.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
-        ])
     }
     
     private func showErrorState() {
+        view.backgroundColor = .systemBackground
+        
         let label = UILabel()
-        label.text = "Failed to load React Native view"
+        label.text = "Failed to load React Native view\nEnsure ReactNativeBrownfield.shared.startReactNative() was called"
         label.textColor = .systemRed
         label.textAlignment = .center
+        label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(label)
         NSLayoutConstraint.activate([
             label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            label.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            label.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20)
         ])
     }
     
-    public override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        if isMovingFromParent || isBeingDismissed {
-            // Clean up when the view controller is being removed
-            cleanupView()
-        }
-    }
-    
-    private func cleanupView() {
-        reactView?.removeFromSuperview()
-        reactView = nil
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

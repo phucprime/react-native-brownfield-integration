@@ -24,6 +24,9 @@ target 'RNBridgeDemo' do
     :app_path => "#{Pod::Config.instance.installation_root}/../MyRNFramework"
   )
 
+  # React Native Brownfield library for brownfield integration
+  pod 'react-native-brownfield', :path => '../MyRNFramework/node_modules/@callstack/react-native-brownfield'
+
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
