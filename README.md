@@ -21,12 +21,13 @@ Package React Native as a framework (XCFramework/AAR) and embed it into existing
 │                                    │                                            │
 │                                    ▼                                            │
 │  ┌──────────────────────────────────────────────────────────────────────────┐   │
-│  │                      Metro Bundler / Rock CLI                            │   │
+│  │                         Build Commands                                   │   │
 │  │                                                                          │   │
-│  │   npm run bundle:ios      →  main.jsbundle (iOS)                         │   │
-│  │   npm run bundle:android  →  index.android.bundle (Android)              │   │
 │  │   npm run package:ios     →  MyRNFramework.xcframework                   │   │
 │  │   npm run package:android →  myrnframework.aar                           │   │
+│  │                                                                          │   │
+│  │   ─────────────────────────────────────────────────────────────────────  │   │
+│  │   Rock CLI packages everything: RN runtime + JS bundle + native modules  │   │
 │  │                                                                          │   │
 │  └──────────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────────┘
@@ -123,15 +124,23 @@ The `examples/` folder shows the **true brownfield pattern**: native apps that h
 cd MyRNFramework
 npm install
 
-# Build iOS XCFramework
+# Build iOS XCFramework (this is all you need!)
 npm run package:ios
 # Output: MyRNFramework/build/MyRNFramework.xcframework
-# Output: MyRNFramework/build/main.jsbundle
 
-# Build Android AAR  
+# Build Android AAR (this is all you need!)
 npm run package:android
 # Output: MyRNFramework/build/myrnframework.aar
 ```
+
+> **💡 What does `package:ios` / `package:android` do?**
+> 
+> These commands use [Rock CLI](https://www.rockjs.dev) to create a **complete, self-contained native framework** that includes:
+> - React Native runtime (Hermes JS engine)
+> - Your compiled JavaScript bundle
+> - All native modules and dependencies
+> 
+> The output XCFramework/AAR can be used in any native app without needing node_modules or Metro bundler.
 
 ### Step 2: Copy Frameworks to Examples
 
@@ -526,6 +535,48 @@ To update the React Native portion:
 2. Rebuild: `npm run package:ios` or `npm run package:android`
 3. Replace the old XCFramework/AAR with the new one
 4. Rebuild your native app
+
+---
+
+## 📦 Available Build Commands
+
+The `MyRNFramework/package.json` includes several build scripts. Here's what each one does:
+
+### For Brownfield Integration (USE THESE)
+
+| Command | Output | Description |
+|---------|--------|-------------|
+| `npm run package:ios` | `build/MyRNFramework.xcframework` | **Complete iOS framework** with RN runtime + JS bundle. Drop into any Xcode project. |
+| `npm run package:android` | `build/myrnframework.aar` | **Complete Android library** with RN runtime + JS bundle. Drop into any Android project. |
+
+### For Development Only (DON'T USE FOR BROWNFIELD)
+
+| Command | Output | Description |
+|---------|--------|-------------|
+| `npm run bundle:ios` | `ios/main.jsbundle` | Creates JS bundle only. Used internally during development. |
+| `npm run bundle:android` | `android/.../index.android.bundle` | Creates JS bundle only. Used internally during development. |
+| `npm run ios` | — | Runs the dev app in iOS Simulator with Metro server. |
+| `npm run android` | — | Runs the dev app in Android Emulator with Metro server. |
+
+### When to Use What
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   "I want to embed React Native in my existing native app"                  │
+│                                                                             │
+│   → Use: npm run package:ios  or  npm run package:android                   │
+│   → Get: XCFramework/AAR that works standalone                              │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   "I want to develop/debug the React Native code"                           │
+│                                                                             │
+│   → Use: npm run ios  or  npm run android                                   │
+│   → Get: Live development with Metro hot reload                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
