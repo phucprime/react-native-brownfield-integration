@@ -51,7 +51,7 @@ class MainActivity : FragmentActivity() {
         setContent {
             RNBridgeDemoTheme {
                 ReactNativeFullScreen(
-                    moduleName = "BrownfieldScreen",
+                    moduleName = "MyRNFramework",
                     onBack = { recreate() }
                 )
             }
@@ -138,7 +138,7 @@ fun MainScreen(
                 )
             ) {
                 EmbeddedReactNativeView(
-                    moduleName = "BrownfieldScreen",
+                    moduleName = "MyRNFramework",
                     modifier = Modifier.fillMaxSize()
                 )
             }

@@ -15,7 +15,7 @@ class ViewController: UIViewController {
     
     // MARK: - Constants
     
-    private let moduleName = "BrownfieldScreen"
+    private let moduleName = "MyRNFramework"
     
     // MARK: - UI Components
     

@@ -1,19 +1,25 @@
 # Dependencies
 node_modules/
 package-lock.json
+yarn.lock
 
 # Build outputs
 *.jsbundle
 *.jsbundle.meta
 build/
 dist/
+*.xcframework/
+*.aar
 
 # iOS
 ios/Pods/
 ios/*.xcworkspace
 ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/
 ios/DerivedData/
 *.ipa
+*.dSYM.zip
+*.dSYM
 
 # Android
 android/.gradle/
@@ -22,6 +28,9 @@ android/build/
 *.apk
 *.aab
 local.properties
+android/app/src/main/assets/index.android.bundle
+android/app/src/main/res/drawable-*
+android/app/src/main/res/raw/
 
 # IDE
 .idea/
@@ -35,6 +44,7 @@ local.properties
 
 # Testing
 coverage/
+__tests__/__snapshots__/
 
 # Logs
 *.log
@@ -44,8 +54,23 @@ yarn-error.log*
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Temporary files
 *.tmp
 *.temp
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# React Native
+.expo/
+.expo-shared/
+
