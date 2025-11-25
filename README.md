@@ -25,8 +25,8 @@ Brownfield integration allows you to embed React Native into existing native app
 
 ## Recommended Tools
 
-- **[Rock](https://github.com/nicklockwood/Rock)** - CLI tool for packaging React Native as native frameworks
-- **[@callstack/react-native-brownfield](https://github.com/nicklockwood/react-native-brownfield)** - Simplifies brownfield integration
+- **[Rock](https://www.rockjs.dev/docs/brownfield/intro)** - CLI tool for packaging React Native as native frameworks
+- **[@callstack/react-native-brownfield](https://github.com/callstack/react-native-brownfield)** - Simplifies brownfield integration
 - **[CocoaPods](https://cocoapods.org/)** - iOS dependency management
 - **[Gradle](https://gradle.org/)** - Android build automation
 
