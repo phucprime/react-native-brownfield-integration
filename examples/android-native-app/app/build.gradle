@@ -1,0 +1,96 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+/**
+ * Native Android App - React Native Brownfield Integration Example
+ * 
+ * This is a PURE native Android app that demonstrates consuming
+ * the packaged MyRNFramework AAR file.
+ * 
+ * Prerequisites:
+ * 1. cd MyRNFramework && npm run package:android
+ * 2. Copy myrnframework.aar to app/libs/
+ * 3. Sync and build!
+ */
+android {
+    namespace = "com.example.nativeapp"
+    compileSdk = rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId = "com.example.nativeapp"
+        minSdk = rootProject.ext.minSdkVersion
+        targetSdk = rootProject.ext.targetSdkVersion
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    buildTypes {
+        debug {
+            debuggable = true
+        }
+        release {
+            minifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+    
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+}
+
+dependencies {
+    // ==============================================================================
+    // React Native Framework (AAR) - contains RN runtime + your JS bundle
+    // ==============================================================================
+    // Option 1: Local AAR file (after running npm run package:android in MyRNFramework/)
+    // The AAR includes React Native runtime, JS bundle, and brownfield APIs
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+    
+    // Option 2: If published to Maven (uncomment when available)
+    // implementation("com.yourcompany:myrnframework:1.0.0")
+    
+    // ==============================================================================
+    // Native Android Dependencies (no React Native node_modules needed!)
+    // ==============================================================================
+    // AndroidX Core
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    
+    // Jetpack Compose
+    implementation(platform("androidx.compose:compose-bom:2024.01.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    
+    // Debug tools
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+}

@@ -1,9 +1,15 @@
 //
 //  AppDelegate.swift
-//  RNBridgeDemo
+//  NativeiOSApp
 //
-//  Demo application showing how to integrate React Native using
-//  @callstack/react-native-brownfield library.
+//  Native iOS Application demonstrating React Native Brownfield Integration.
+//  This is a PURE native iOS app that consumes the pre-built MyRNFramework.xcframework.
+//
+//  Prerequisites:
+//  1. Build the framework: cd MyRNFramework && npm run package:ios
+//  2. Copy MyRNFramework.xcframework to examples/ios-native-app/build/
+//  3. Copy main.jsbundle to RNBridgeDemo/Resources/
+//  4. Run: pod install
 //
 //  Reference: https://github.com/callstack/react-native-brownfield/blob/main/docs/SWIFT.md
 //
@@ -22,8 +28,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         
         // Initialize React Native using @callstack/react-native-brownfield
+        // The XCFramework contains the bundled JS, so no metro server needed
         ReactNativeBrownfield.shared.startReactNative {
-            print("[RNBridgeDemo] React Native bundle loaded")
+            print("[NativeiOSApp] React Native framework loaded successfully from XCFramework")
         }
         
         return true

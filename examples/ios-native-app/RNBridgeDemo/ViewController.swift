@@ -1,10 +1,11 @@
 //
 //  ViewController.swift
-//  RNBridgeDemo
+//  NativeiOSApp
 //
-//  Main view controller demonstrating how to embed React Native views
-//  within a native iOS application using @callstack/react-native-brownfield.
+//  Native iOS view controller demonstrating React Native brownfield integration.
+//  This is a PURE native iOS app consuming the pre-built MyRNFramework.xcframework.
 //
+//  Uses @callstack/react-native-brownfield for proper brownfield integration.
 //  Reference: https://github.com/callstack/react-native-brownfield/blob/main/docs/SWIFT.md
 //
 
@@ -21,7 +22,7 @@ class ViewController: UIViewController {
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "React Native Brownfield Demo"
+        label.text = "Native iOS App"
         label.font = .systemFont(ofSize: 24, weight: .bold)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -30,7 +31,7 @@ class ViewController: UIViewController {
     
     private lazy var descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "This is a native iOS app.\nTap the button below to open a React Native view."
+        label.text = "This is a PURE native iOS app.\nReact Native is loaded from a pre-built XCFramework.\nNo node_modules required!"
         label.font = .systemFont(ofSize: 16)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
@@ -75,6 +76,16 @@ class ViewController: UIViewController {
         return button
     }()
     
+    private lazy var statusLabel: UILabel = {
+        let label = UILabel()
+        label.text = "✅ Using XCFramework + @callstack/react-native-brownfield"
+        label.font = .systemFont(ofSize: 14)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private var embeddedRNView: UIView?
     private var rnContainerView: UIView?
     
@@ -96,6 +107,7 @@ class ViewController: UIViewController {
         view.addSubview(openRNButton)
         view.addSubview(presentRNButton)
         view.addSubview(embedRNButton)
+        view.addSubview(statusLabel)
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
@@ -120,6 +132,10 @@ class ViewController: UIViewController {
             embedRNButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             embedRNButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
             embedRNButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            statusLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
         ])
     }
     
@@ -197,7 +213,7 @@ class ViewController: UIViewController {
             containerView.topAnchor.constraint(equalTo: embedRNButton.bottomAnchor, constant: 30),
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            containerView.bottomAnchor.constraint(equalTo: statusLabel.topAnchor, constant: -20),
             
             rootView.topAnchor.constraint(equalTo: containerView.topAnchor),
             rootView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),

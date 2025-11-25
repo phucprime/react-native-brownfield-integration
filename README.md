@@ -31,126 +31,132 @@ Package React Native as a framework (XCFramework/AAR) and embed it into existing
 │  └──────────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────────┘
                                     │
-            ┌───────────────────────┴───────────────────────┐
-            │                                               │
-            ▼                                               ▼
-┌───────────────────────────────────┐     ┌───────────────────────────────────┐
-│         iOS Native App            │     │       Android Native App          │
-│    (Host Application - Swift)     │     │   (Host Application - Kotlin)     │
-├───────────────────────────────────┤     ├───────────────────────────────────┤
-│                                   │     │                                   │
-│  ┌─────────────────────────────┐  │     │  ┌─────────────────────────────┐  │
-│  │   XCFramework / CocoaPods   │  │     │  │   AAR / Gradle Dependency   │  │
-│  │   + main.jsbundle           │  │     │  │   + index.android.bundle    │  │
-│  └─────────────────────────────┘  │     │  └─────────────────────────────┘  │
-│              │                    │     │              │                    │
-│              ▼                    │     │              ▼                    │
-│  ┌─────────────────────────────┐  │     │  ┌─────────────────────────────┐  │
-│  │   ReactNativeBrownfield     │  │     │  │   ReactNativeBrownfield     │  │
-│  │   (@callstack library)      │  │     │  │   (@callstack library)      │  │
-│  └─────────────────────────────┘  │     │  └─────────────────────────────┘  │
-│              │                    │     │              │                    │
-│              ▼                    │     │              ▼                    │
-│  ┌─────────────────────────────┐  │     │  ┌─────────────────────────────┐  │
-│  │  ReactNativeView (SwiftUI)  │  │     │  │  Jetpack Compose / Activity │  │
-│  │  ReactNativeViewController  │  │     │  │   (createView wrapper)      │  │
-│  └─────────────────────────────┘  │     │  └─────────────────────────────┘  │
-│              │                    │     │              │                    │
-│              ▼                    │     │              ▼                    │
-│  ┌─────────────────────────────┐  │     │  ┌─────────────────────────────┐  │
-│  │    Native App UI (Swift)    │  │     │  │   Native App UI (Kotlin)    │  │
-│  │    Navigation, Screens...   │  │     │  │   Navigation, Screens...    │  │
-│  └─────────────────────────────┘  │     │  └─────────────────────────────┘  │
-│                                   │     │                                   │
-└───────────────────────────────────┘     └───────────────────────────────────┘
+                                    │  Copy packaged frameworks
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              examples/                                          │
+│                    (Pure Native Apps - No node_modules!)                        │
+│                                                                                 │
+│   ┌─────────────────────────────────┐   ┌─────────────────────────────────┐    │
+│   │       ios-native-app/           │   │     android-native-app/         │    │
+│   │     (Pure Native Swift)         │   │    (Pure Native Kotlin)         │    │
+│   ├─────────────────────────────────┤   ├─────────────────────────────────┤    │
+│   │                                 │   │                                 │    │
+│   │  build/                         │   │  app/libs/                      │    │
+│   │  └── MyRNFramework.xcframework  │   │  └── myrnframework.aar          │    │
+│   │                                 │   │                                 │    │
+│   │  Podfile                        │   │  build.gradle                   │    │
+│   │  └── pod 'ReactBrownfield'      │   │  └── react-native-brownfield    │    │
+│   │                                 │   │                                 │    │
+│   │  RNBridgeDemo/                  │   │  app/src/.../nativeapp/         │    │
+│   │  ├── AppDelegate.swift          │   │  ├── MainApplication.kt         │    │
+│   │  └── ViewController.swift       │   │  └── MainActivity.kt            │    │
+│   │                                 │   │                                 │    │
+│   └─────────────────────────────────┘   └─────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Project Structure
 
 ```
 react-native-brownfield-integration/
-├── MyRNFramework/                      # React Native framework source
-│   ├── src/App.tsx                     # React Native UI components
-│   ├── index.ts                        # Entry point (AppRegistry.registerComponent)
-│   ├── package.json                    # Dependencies & scripts
-│   ├── ios/                            # iOS demo app
+│
+├── MyRNFramework/                          # React Native framework source
+│   ├── src/App.tsx                         # React Native UI components
+│   ├── index.ts                            # Entry point (AppRegistry.registerComponent)
+│   ├── package.json                        # Dependencies & scripts (bundle, package)
+│   ├── ios/                                # iOS development app (uses node_modules)
 │   │   ├── Podfile
 │   │   └── MyRNFramework/
-│   │       ├── AppDelegate.swift       # ReactNativeBrownfield.shared.startReactNative()
-│   │       ├── ReactNativeView.swift   # Re-exports library components
-│   │       └── NativeModule.swift      # Custom native module example
-│   └── android/                        # Android demo app
+│   │       ├── AppDelegate.swift
+│   │       └── NativeModule.swift
+│   └── android/                            # Android development app (uses node_modules)
 │       └── app/src/main/java/com/myrnframework/
-│           ├── MainApplication.kt      # ReactNativeBrownfield.initialize()
-│           └── MainActivity.kt         # ReactNativeBrownfield.shared.createView()
+│           ├── MainApplication.kt
+│           └── MainActivity.kt
 │
-├── ios/                                # iOS native host app demo
-│   ├── Podfile                         # CocoaPods (react-native-brownfield)
-│   ├── RNBridge.xcodeproj/             # Xcode project
-│   └── RNBridgeDemo/                   # Demo app source
-│       ├── AppDelegate.swift           # ReactNativeBrownfield.shared.startReactNative()
-│       └── ViewController.swift        # ReactNativeViewController usage
+├── examples/                               # ⭐ TRUE BROWNFIELD EXAMPLES
+│   │
+│   ├── ios-native-app/                     # Pure native iOS app
+│   │   ├── build/                          # Place XCFramework here after build
+│   │   │   └── MyRNFramework.xcframework
+│   │   ├── Podfile                         # Only ReactBrownfield pod
+│   │   └── RNBridgeDemo/
+│   │       ├── AppDelegate.swift           # ReactNativeBrownfield.shared.startReactNative()
+│   │       └── ViewController.swift        # ReactNativeViewController usage
+│   │
+│   └── android-native-app/                 # Pure native Android app
+│       ├── app/libs/                       # Place AAR here after build
+│       │   └── myrnframework.aar
+│       ├── build.gradle                    # Pure native, no RN gradle plugins
+│       └── app/src/main/java/com/example/nativeapp/
+│           ├── MainApplication.kt          # ReactNativeBrownfield.initialize()
+│           └── MainActivity.kt             # Jetpack Compose + createView()
 │
-├── android/                            # Android native host app demo
-│   ├── build.gradle                    # Root gradle config
-│   ├── settings.gradle
-│   └── app/
-│       ├── build.gradle                # App dependencies
-│       └── src/main/java/com/brownfield/rnbridge/demo/
-│           ├── MainApplication.kt      # ReactNativeBrownfield.initialize()
-│           └── MainActivity.kt         # ReactNativeBrownfield.shared.createView()
+├── .github/                                # GitHub templates
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
 │
-└── README.md
+├── LICENSE                                 # MIT License
+├── CONTRIBUTING.md                         # Contribution guidelines
+├── CHANGELOG.md                            # Version history
+└── README.md                               # This file
 ```
 
-**Note:** This project uses `@callstack/react-native-brownfield` for all native bridge functionality.
-No custom bridge code needed - the library provides everything:
-- **iOS**: `ReactNativeBrownfield`, `ReactNativeView` (SwiftUI), `ReactNativeViewController` (UIKit)  
-- **Android**: `ReactNativeBrownfield.initialize()`, `ReactNativeBrownfield.shared.createView()`
+## Key Concept: Development vs Production
+
+This project demonstrates **two different integration modes**:
+
+| Mode | Location | Use Case | How it Works |
+|------|----------|----------|--------------|
+| **Development** | `MyRNFramework/ios/` and `MyRNFramework/android/` | Developing the RN framework | Uses `node_modules` directly, Metro dev server |
+| **Production (Brownfield)** | `examples/ios-native-app/` and `examples/android-native-app/` | Integrating into existing apps | Uses packaged XCFramework/AAR, **no node_modules** |
+
+The `examples/` folder shows the **true brownfield pattern**: native apps that have **zero knowledge of React Native's build system** - they just consume pre-built binary frameworks.
 
 ## Quick Start
 
-### Option 1: Run MyRNFramework (React Native bundled app)
+### Step 1: Build the React Native Framework
 
 ```bash
+# Install dependencies
 cd MyRNFramework
 npm install
 
+# Build iOS XCFramework
+npm run package:ios
+# Output: MyRNFramework/build/MyRNFramework.xcframework
+
+# Build Android AAR  
+npm run package:android
+# Output: MyRNFramework/build/myrnframework.aar
+```
+
+### Step 2: Copy Frameworks to Examples
+
+```bash
 # iOS
-cd ios && pod install && cd ..
-npx react-native run-ios
+cp -r MyRNFramework/build/MyRNFramework.xcframework examples/ios-native-app/build/
 
 # Android
-npx react-native run-android
+cp MyRNFramework/build/myrnframework.aar examples/android-native-app/app/libs/
 ```
 
-### Option 2: Run Native Host Apps (ios/ & android/ folders)
+### Step 3: Run the Native Example Apps
 
-These are native iOS/Android apps that demonstrate embedding React Native views:
-
+**iOS:**
 ```bash
-# First, install RN dependencies
-cd MyRNFramework && npm install && cd ..
-
-# iOS (requires Xcode)
-cd ios && pod install && cd ..
-open ios/RNBridge.xcodeproj  # Build & run RNBridgeDemo target
-
-# Android (requires Android Studio)
-cd android && ./gradlew assembleDebug
-# Or open android/ in Android Studio and run
+cd examples/ios-native-app
+pod install
+open RNBridge.xcodeproj
+# Build and run in Xcode
 ```
 
-### 3. Build for Production
-
+**Android:**
 ```bash
-# Bundle JavaScript
-npm run bundle:ios
-npm run bundle:android
-
-# Package as framework (requires Rock CLI)
-npm run package:ios      # → XCFramework
-npm run package:android  # → AAR
+cd examples/android-native-app
+./gradlew assembleDebug
+# Or open in Android Studio and run
 ```
 
 ---
@@ -196,155 +202,60 @@ When you package React Native as AAR (Android) or XCFramework (iOS), you're crea
 │ • main.jsbundle (embedded)   │                         │ • index.android.bundle       │
 │ • Native modules             │                         │ • Native modules             │
 └──────────────────────────────┘                         └──────────────────────────────┘
+              │                                                       │
+              │                                                       │
+              ▼                                                       ▼
+┌──────────────────────────────┐                         ┌──────────────────────────────┐
+│   examples/ios-native-app/   │                         │ examples/android-native-app/ │
+│   build/                     │                         │   app/libs/                  │
+│   └── MyRNFramework.xcfwk    │                         │   └── myrnframework.aar      │
+│                              │                         │                              │
+│   Podfile (ReactBrownfield)  │                         │   build.gradle (brownfield)  │
+│                              │                         │                              │
+│   ✅ No node_modules         │                         │   ✅ No node_modules         │
+│   ✅ No Metro server         │                         │   ✅ No Metro server         │
+│   ✅ Pure native app         │                         │   ✅ Pure native app         │
+└──────────────────────────────┘                         └──────────────────────────────┘
 ```
 
-### Using AAR in Native Android Project
+---
 
-**Step 1: Add AAR to your project**
+## Native App Integration
 
-```
-YourNativeAndroidApp/
-├── app/
-│   ├── build.gradle
-│   └── libs/
-│       └── myrnframework.aar    ← Copy AAR here
-```
+### iOS Integration (Swift)
 
-**Step 2: Configure `app/build.gradle`**
-
-```gradle
-dependencies {
-    // Add local AAR
-    implementation files('libs/myrnframework.aar')
-    
-    // OR publish to Maven and use:
-    // implementation 'com.yourcompany:myrnframework:1.0.0'
-    
-    // Required: React Native Brownfield library
-    implementation 'com.callstack:react-native-brownfield:1.x.x'
-}
-```
-
-**Step 3: Initialize in Application**
-
-```kotlin
-// MainApplication.kt
-import com.callstack.reactnativebrownfield.ReactNativeBrownfield
-
-class MainApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        
-        // Initialize React Native (loads the JS bundle from AAR)
-        ReactNativeBrownfield.initialize(this, emptyList()) { loaded ->
-            Log.d("RN", "Bundle loaded: $loaded")
-        }
-    }
-}
-```
-
-**Step 4: Display React Native View**
-
-```kotlin
-// In any Activity or Fragment
-val rnView = ReactNativeBrownfield.shared.createView(
-    activity = this,
-    moduleName = "MyRNFramework"  // Must match AppRegistry.registerComponent name
-)
-container.addView(rnView)
-```
-
-### Using XCFramework in Native iOS Project
-
-**Step 1: Add XCFramework to your project**
-
-Drag `MyRNFramework.xcframework` into Xcode → "Frameworks, Libraries, and Embedded Content" → Set to "Embed & Sign"
-
-```
-YourNativeiOSApp/
-├── YourApp.xcodeproj
-├── YourApp/
-│   └── ...
-└── Frameworks/
-    └── MyRNFramework.xcframework    ← Add here
-```
-
-**Step 2: Add CocoaPods dependencies**
-
-```ruby
-# Podfile
-target 'YourApp' do
-  use_frameworks!
-  
-  # Required: React Native Brownfield
-  pod 'ReactBrownfield', :git => 'https://github.com/callstack/react-native-brownfield.git'
-end
-```
-
-**Step 3: Initialize in AppDelegate**
-
+**AppDelegate.swift:**
 ```swift
-// AppDelegate.swift
+import UIKit
 import ReactBrownfield
 
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
-        // Initialize React Native (loads the JS bundle from XCFramework)
+        // Initialize React Native (loads JS bundle from XCFramework)
         ReactNativeBrownfield.shared.startReactNative {
-            print("React Native bundle loaded")
+            print("React Native framework loaded")
         }
         return true
     }
 }
 ```
 
-**Step 4: Display React Native View**
-
+**Using ReactNativeViewController:**
 ```swift
-// SwiftUI
 import ReactBrownfield
 
-struct ContentView: View {
-    var body: some View {
-        ReactNativeView(moduleName: "MyRNFramework")
-    }
-}
+// Push navigation
+let rnVC = ReactNativeViewController(moduleName: "MyRNFramework")
+navigationController?.pushViewController(rnVC, animated: true)
 
-// UIKit
-let rnViewController = ReactNativeViewController(moduleName: "MyRNFramework")
-present(rnViewController, animated: true)
+// Modal presentation
+present(rnVC, animated: true)
 ```
 
-### Important Notes
-
-| Aspect | Description |
-|--------|-------------|
-| **Module Name** | Must match `AppRegistry.registerComponent('MyRNFramework', ...)` in your `index.ts` |
-| **JS Bundle** | Embedded inside AAR/XCFramework - no separate file needed at runtime |
-| **Updates** | To update RN code, rebuild AAR/XCFramework and replace in native project |
-| **Debug vs Release** | Debug builds connect to Metro dev server; Release builds use embedded bundle |
-
----
-
-## Integration into Existing Native Apps
-
-### iOS (SwiftUI)
-
+**Using SwiftUI:**
 ```swift
-import ReactBrownfield
-
-// 1. Initialize in AppDelegate
-func application(_ application: UIApplication, 
-                 didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    ReactNativeBrownfield.shared.startReactNative {
-        print("React Native bundle loaded")
-    }
-    return true
-}
-
-// 2. Embed in SwiftUI (iOS 14.0+)
 import SwiftUI
 import ReactBrownfield
 
@@ -353,47 +264,60 @@ struct ContentView: View {
         ReactNativeView(moduleName: "MyRNFramework")
     }
 }
-
-// 3. Or use UIKit with ReactNativeViewController
-let rnViewController = ReactNativeViewController(moduleName: "MyRNFramework")
-navigationController?.pushViewController(rnViewController, animated: true)
 ```
 
-### Android (Jetpack Compose)
+### Android Integration (Kotlin)
 
+**MainApplication.kt:**
 ```kotlin
+import android.app.Application
 import com.callstack.reactnativebrownfield.ReactNativeBrownfield
 
-// 1. Initialize in Application.onCreate()
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        val packages = PackageList(this).packages
-        ReactNativeBrownfield.initialize(this, packages) { initialized ->
-            Log.d("RN", "Bundle loaded: $initialized")
+        // Initialize React Native (loads JS bundle from AAR)
+        ReactNativeBrownfield.initialize(this, emptyList()) { initialized ->
+            println("React Native framework loaded: $initialized")
         }
     }
 }
+```
 
-// 2. Embed in Jetpack Compose (requires FragmentActivity)
+**Using Jetpack Compose:**
+```kotlin
+import androidx.compose.ui.viewinterop.AndroidView
+import com.callstack.reactnativebrownfield.ReactNativeBrownfield
+
 @Composable
-fun ReactNativeComposeView(moduleName: String) {
+fun ReactNativeScreen() {
     val activity = LocalContext.current as FragmentActivity
     AndroidView(
-        factory = { _ ->
-            ReactNativeBrownfield.shared.createView(activity, moduleName)
+        factory = {
+            ReactNativeBrownfield.shared.createView(activity, "MyRNFramework")
         }
     )
 }
 ```
+
+---
+
+## Important Notes
+
+| Aspect | Description |
+|--------|-------------|
+| **Module Name** | Must match `AppRegistry.registerComponent('MyRNFramework', ...)` in `index.ts` |
+| **JS Bundle** | Embedded inside AAR/XCFramework - no separate file needed at runtime |
+| **Updates** | To update RN code, rebuild AAR/XCFramework and replace in native project |
+| **Debug vs Release** | Development apps use Metro; Production apps use embedded bundle |
 
 ## Key Technologies
 
 | Component | iOS | Android |
 |-----------|-----|---------|
 | **Framework** | XCFramework | AAR |
-| **Bridge** | ReactNativeBrownfield | ReactNativeBrownfield |
-| **UI Integration** | ReactNativeView (SwiftUI) / ReactNativeViewController (UIKit) | createView() (Compose/Activity) |
+| **Bridge Library** | ReactBrownfield | react-native-brownfield |
+| **UI Integration** | ReactNativeView / ReactNativeViewController | createView() |
 | **JS Engine** | Hermes | Hermes |
 | **Bundler** | Metro | Metro |
 | **Packaging** | Rock CLI | Rock CLI |
@@ -401,7 +325,7 @@ fun ReactNativeComposeView(moduleName: String) {
 ## Tools & Dependencies
 
 - **[Rock CLI](https://www.rockjs.dev)** - Package React Native as native frameworks
-- **[@callstack/react-native-brownfield](https://github.com/callstack/react-native-brownfield)** - Brownfield integration library
+- **[@callstack/react-native-brownfield](https://github.com/callstack/react-native-brownfield)** - Official brownfield integration library
 
 ## License
 

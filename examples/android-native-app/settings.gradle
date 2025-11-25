@@ -1,0 +1,33 @@
+// ==============================================================================
+// Native Android App - React Native Brownfield Integration Example
+// ==============================================================================
+//
+// This demonstrates how a REAL native Android app consumes the packaged
+// React Native framework (AAR).
+//
+// Prerequisites:
+// 1. Build the AAR first:
+//    cd MyRNFramework && npm run package:android
+// 2. Copy myrnframework.aar to app/libs/ folder
+// 3. Sync gradle and build!
+//
+// ==============================================================================
+
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "NativeAndroidApp"
+include ':app'

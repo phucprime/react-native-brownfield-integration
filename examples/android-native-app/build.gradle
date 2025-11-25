@@ -1,0 +1,33 @@
+// ==============================================================================
+// Native Android App - React Native Brownfield Integration Example
+// ==============================================================================
+//
+// This is a PURE native Android project that consumes the packaged AAR.
+//
+// After `npm run package:android` in MyRNFramework/:
+//   → myrnframework.aar (React Native runtime + JS bundle)
+//
+// Integration:
+// 1. Copy myrnframework.aar to app/libs/
+// 2. Sync gradle and build!
+//
+// Usage in Kotlin:
+//   import com.callstack.reactnativebrownfield.ReactNativeBrownfield
+//   ReactNativeBrownfield.initialize(application, emptyList()) { println("Loaded") }
+//   ReactNativeBrownfield.shared.createView(activity, "MyRNFramework")
+//
+// ==============================================================================
+
+buildscript {
+    ext {
+        minSdkVersion = 24
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        kotlinVersion = "1.9.22"
+    }
+}
+
+plugins {
+    id 'com.android.application' version '8.2.0' apply false
+    id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
+}

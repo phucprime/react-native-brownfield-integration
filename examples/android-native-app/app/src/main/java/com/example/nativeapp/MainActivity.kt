@@ -1,4 +1,4 @@
-package com.brownfield.rnbridge.demo
+package com.example.nativeapp
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -16,13 +16,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import com.callstack.reactnativebrownfield.ReactNativeBrownfield
-import com.brownfield.rnbridge.demo.ui.theme.RNBridgeDemoTheme
+import com.example.nativeapp.ui.theme.NativeAppTheme
 
 /**
- * Main Activity demonstrating how to integrate React Native views
- * within a native Android application using Jetpack Compose.
+ * Native Android Activity demonstrating React Native brownfield integration.
  * 
+ * This is a PURE native Android app consuming the pre-built MyRNFramework AAR.
  * Uses @callstack/react-native-brownfield for proper brownfield integration.
+ * 
  * Reference: https://github.com/callstack/react-native-brownfield/blob/main/docs/KOTLIN.md
  */
 class MainActivity : FragmentActivity() {
@@ -31,7 +32,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         
         setContent {
-            RNBridgeDemoTheme {
+            NativeAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -49,7 +50,7 @@ class MainActivity : FragmentActivity() {
      */
     private fun openReactNativeFullScreen() {
         setContent {
-            RNBridgeDemoTheme {
+            NativeAppTheme {
                 ReactNativeFullScreen(
                     moduleName = "MyRNFramework",
                     onBack = { recreate() }
@@ -77,7 +78,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(40.dp))
         
         Text(
-            text = "React Native Brownfield Demo",
+            text = "Native Android App",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
@@ -86,7 +87,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "This is a native Android app using\n@callstack/react-native-brownfield.\nChoose how to integrate React Native:",
+            text = "This is a PURE native Android app.\nReact Native is loaded from a pre-built AAR.\nNo node_modules required!",
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -148,7 +149,7 @@ fun MainScreen(
         
         // Status indicator
         Text(
-            text = "Using @callstack/react-native-brownfield ✅",
+            text = "✅ Using AAR + @callstack/react-native-brownfield",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
