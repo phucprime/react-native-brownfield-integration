@@ -5,8 +5,14 @@ plugins {
 }
 
 /**
- * This is the configuration block to customize your React Native Android app.
- * By default you don't need to apply any configuration, just uncomment the lines you need.
+ * React Native Brownfield Configuration
+ * 
+ * This build configuration supports:
+ * - Standard React Native development and testing
+ * - AAR packaging via Rock CLI for framework distribution
+ * - Integration with @callstack/react-native-brownfield-shared
+ * 
+ * For AAR packaging, run: npm run package:android
  */
 react {
     /* Folders */
@@ -26,10 +32,13 @@ react {
     // bundleIn = ["debug"]
 
     /* Hermes & Flipper */
-    //   Enable Hermes by default (recommended)
+    //   Enable Hermes by default (recommended for performance)
     hermesEnabled = true
     //   Enable Flipper for debug builds
     debuggableVariants = ["debug"]
+    
+    /* Autolinking */
+    autolinkLibrariesWithApp()
 }
 
 android {
@@ -42,10 +51,14 @@ android {
         targetSdk rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
+        
+        // Enable multidex for brownfield integration with large native apps
+        multiDexEnabled true
     }
 
     buildFeatures {
         compose true
+        buildConfig true
     }
 
     composeOptions {
@@ -59,6 +72,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            // For production release, consider enabling:
+            // minifyEnabled true
+            // shrinkResources true
         }
     }
 
@@ -70,28 +86,42 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    
+    // Packaging options for brownfield integration
+    packagingOptions {
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+    }
 }
 
 dependencies {
-    // React Native dependencies
+    // React Native core dependencies
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:hermes-android")
     
-    // React Native Brownfield integration
+    // React Native Brownfield integration library
+    // This provides ReactNativeBrownfieldShared for easy initialization
     implementation("com.callstack.reactnativeshared:react-native-brownfield-shared:latest.release")
     
-    // AndroidX dependencies
+    // AndroidX core dependencies
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.multidex:multidex:2.0.1")
     
-    // Jetpack Compose
+    // Jetpack Compose for modern UI integration
     implementation("androidx.compose.ui:ui:1.6.0")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.0")
+    
+    // Optional: Add for advanced brownfield features
+    // implementation("androidx.navigation:navigation-compose:2.7.6")
 }
 
+// Apply native modules configuration from React Native CLI
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
 applyNativeModulesAppBuildGradle(project)

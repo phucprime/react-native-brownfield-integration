@@ -1,16 +1,27 @@
 {
   "name": "my-rn-framework",
   "version": "1.0.0",
-  "description": "React Native Framework for brownfield integration",
+  "description": "React Native Framework for brownfield integration - Package as XCFramework/AAR for embedding in native iOS/Android apps",
   "main": "index.ts",
   "scripts": {
     "start": "react-native start",
+    "start:reset": "react-native start --reset-cache",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
     "package:ios": "rock package:ios",
     "package:android": "rock package:aar",
     "bundle:ios": "react-native bundle --entry-file index.ts --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
-    "bundle:android": "react-native bundle --entry-file index.ts --platform android --dev false --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "bundle:android": "mkdir -p android/app/src/main/assets && react-native bundle --entry-file index.ts --platform android --dev false --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "bundle:ios:debug": "react-native bundle --entry-file index.ts --platform ios --dev true --bundle-output ios/main.jsbundle --assets-dest ios",
+    "bundle:android:debug": "mkdir -p android/app/src/main/assets && react-native bundle --entry-file index.ts --platform android --dev true --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "clean": "rm -rf node_modules ios/Pods ios/build android/build android/app/build",
+    "clean:ios": "rm -rf ios/Pods ios/build ios/main.jsbundle",
+    "clean:android": "rm -rf android/build android/app/build android/app/src/main/assets/index.android.bundle",
+    "pod:install": "cd ios && pod install",
+    "pod:update": "cd ios && pod update",
     "test": "jest",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@callstack/react-native-brownfield": "latest",
@@ -21,7 +32,9 @@
     "@babel/core": "^7.20.0",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
+    "@react-native/babel-preset": "^0.73.0",
     "@react-native/metro-config": "^0.73.0",
+    "@react-native/typescript-config": "^0.73.0",
     "@types/react": "^18.2.0",
     "@types/react-native": "^0.73.0",
     "babel-jest": "^29.2.1",
@@ -33,5 +46,8 @@
   },
   "jest": {
     "preset": "react-native"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

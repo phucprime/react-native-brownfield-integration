@@ -22,13 +22,13 @@ import React
 ///     }
 /// }
 /// ```
-struct ReactNativeView: UIViewRepresentable {
+public struct ReactNativeView: UIViewRepresentable {
     
     /// The name of the React Native module to display
-    let moduleName: String
+    public let moduleName: String
     
     /// Optional initial properties to pass to the React Native component
-    var initialProperties: [AnyHashable: Any]?
+    public var initialProperties: [AnyHashable: Any]?
     
     /// The React Native factory from the app delegate
     private var reactNativeFactory: RCTReactNativeFactory? {
@@ -38,12 +38,12 @@ struct ReactNativeView: UIViewRepresentable {
         return appDelegate.reactNativeFactory
     }
     
-    init(moduleName: String, initialProperties: [AnyHashable: Any]? = nil) {
+    public init(moduleName: String = AppDelegate.moduleName, initialProperties: [AnyHashable: Any]? = nil) {
         self.moduleName = moduleName
         self.initialProperties = initialProperties
     }
     
-    func makeUIView(context: Context) -> UIView {
+    public func makeUIView(context: Context) -> UIView {
         guard let factory = reactNativeFactory else {
             // Return a placeholder view if factory is not available
             let placeholder = UIView()
@@ -73,7 +73,7 @@ struct ReactNativeView: UIViewRepresentable {
         return rootView ?? UIView()
     }
     
-    func updateUIView(_ uiView: UIView, context: Context) {
+    public func updateUIView(_ uiView: UIView, context: Context) {
         // Update the view if needed
         // React Native handles most updates internally
     }
@@ -87,18 +87,18 @@ struct ReactNativeView: UIViewRepresentable {
 /// let rnViewController = ReactNativeViewController(moduleName: "MyRNFramework")
 /// navigationController?.pushViewController(rnViewController, animated: true)
 /// ```
-class ReactNativeViewController: UIViewController {
+public class ReactNativeViewController: UIViewController {
     
     /// The name of the React Native module to display
-    let moduleName: String
+    public let moduleName: String
     
     /// Optional initial properties to pass to the React Native component
-    var initialProperties: [AnyHashable: Any]?
+    public var initialProperties: [AnyHashable: Any]?
     
     /// The React Native root view
     private var reactView: UIView?
     
-    init(moduleName: String, initialProperties: [AnyHashable: Any]? = nil) {
+    public init(moduleName: String = AppDelegate.moduleName, initialProperties: [AnyHashable: Any]? = nil) {
         self.moduleName = moduleName
         self.initialProperties = initialProperties
         super.init(nibName: nil, bundle: nil)
@@ -108,7 +108,7 @@ class ReactNativeViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupReactNativeView()
@@ -155,5 +155,19 @@ class ReactNativeViewController: UIViewController {
             label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        if isMovingFromParent || isBeingDismissed {
+            // Clean up when the view controller is being removed
+            cleanupView()
+        }
+    }
+    
+    private func cleanupView() {
+        reactView?.removeFromSuperview()
+        reactView = nil
     }
 }
