@@ -2,6 +2,7 @@ package com.brownfield.rnbridge
 
 import android.os.Bundle
 import android.view.KeyEvent
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactRootView
@@ -57,6 +58,9 @@ open class RNBridgeActivity : AppCompatActivity(), DefaultHardwareBackBtnHandler
             return
         }
         
+        // Set up modern back press handling
+        setupBackPressHandler()
+        
         reactRootView = ReactRootView(this).apply {
             startReactApplication(
                 reactInstanceManager,
@@ -66,6 +70,24 @@ open class RNBridgeActivity : AppCompatActivity(), DefaultHardwareBackBtnHandler
         }
         
         setContentView(reactRootView)
+    }
+    
+    /**
+     * Sets up the modern OnBackPressedCallback for handling back navigation.
+     * This is the recommended approach for Android API 33+.
+     */
+    private fun setupBackPressHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                reactInstanceManager?.let { manager ->
+                    manager.onBackPressed()
+                    return
+                }
+                // If React Native doesn't handle it, finish the activity
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+            }
+        })
     }
     
     override fun onPause() {
@@ -84,16 +106,8 @@ open class RNBridgeActivity : AppCompatActivity(), DefaultHardwareBackBtnHandler
         reactRootView = null
     }
     
-    override fun onBackPressed() {
-        reactInstanceManager?.let { manager ->
-            manager.onBackPressed()
-            return
-        }
-        super.onBackPressed()
-    }
-    
     override fun invokeDefaultOnBackPressed() {
-        super.onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
     }
     
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {

@@ -29,15 +29,17 @@ const SharedFeature = ({ initialProps = {} }) => {
         text: inputText.trim(),
         completed: false,
       };
-      setItems(prev => [...prev, newItem]);
+      setItems(prev => {
+        const updatedItems = [...prev, newItem];
+        // Notify native side of data change if bridge is available
+        if (NativeModules.BrownfieldBridge?.onDataChange) {
+          NativeModules.BrownfieldBridge.onDataChange(updatedItems);
+        }
+        return updatedItems;
+      });
       setInputText('');
-
-      // Notify native side of data change if bridge is available
-      if (NativeModules.BrownfieldBridge?.onDataChange) {
-        NativeModules.BrownfieldBridge.onDataChange([...items, newItem]);
-      }
     }
-  }, [inputText, items]);
+  }, [inputText]);
 
   const handleToggleItem = useCallback((id) => {
     setItems(prev =>

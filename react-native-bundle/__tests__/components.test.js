@@ -1,36 +1,4 @@
-/**
- * @jest-environment jsdom
- */
-
 import React from 'react';
-
-// Mock React Native modules
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    StyleSheet: {
-      create: (styles) => styles,
-    },
-    Platform: {
-      OS: 'ios',
-      Version: '16.0',
-      select: jest.fn((options) => options.ios || options.default),
-    },
-    NativeModules: {
-      BrownfieldBridge: {
-        navigateBack: jest.fn(),
-        onDataChange: jest.fn(),
-      },
-    },
-    View: 'View',
-    Text: 'Text',
-    TouchableOpacity: 'TouchableOpacity',
-    SafeAreaView: 'SafeAreaView',
-    TextInput: 'TextInput',
-    FlatList: 'FlatList',
-  };
-});
 
 describe('BrownfieldScreen', () => {
   beforeEach(() => {
