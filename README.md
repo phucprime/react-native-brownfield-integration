@@ -4,285 +4,616 @@ Embed React Native into existing native iOS and Android applications. This repos
 
 ## Overview
 
-Brownfield integration is ideal when:
+Brownfield integration allows you to embed React Native into existing native applications. This is ideal when:
+
 - You have an existing native app and want to add React Native features incrementally
 - You want to reuse React Native code across multiple native apps
 - You need specific screens or features built with React Native within a native shell
 - You want to maintain native navigation while using React Native for content
+- You need to package React Native as a framework (XCFramework/AAR) for distribution
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Framework Packaging** | Package React Native as XCFramework (iOS) or AAR (Android) for easy distribution |
+| **Reusable Components** | Share React Native components across multiple native applications |
+| **Native Navigation** | Integrate with native navigation systems (UIKit, SwiftUI, Jetpack Compose) |
+| **Hot Reloading** | Fast development with Metro bundler hot reloading support |
+| **New Architecture** | Support for React Native's New Architecture with TurboModules |
+| **Native Modules** | Bridge native functionality to React Native components |
+
+## Recommended Tools
+
+- **[Rock](https://github.com/nicklockwood/Rock)** - CLI tool for packaging React Native as native frameworks
+- **[@callstack/react-native-brownfield](https://github.com/nicklockwood/react-native-brownfield)** - Simplifies brownfield integration
+- **[CocoaPods](https://cocoapods.org/)** - iOS dependency management
+- **[Gradle](https://gradle.org/)** - Android build automation
 
 ## Project Structure
 
 ```
-├── react-native-bundle/     # Shared React Native JavaScript code
-│   ├── src/
-│   │   ├── BrownfieldScreen.js    # Sample screen component
-│   │   └── SharedFeature.js       # Reusable feature component
-│   ├── index.js                   # Entry point & component registration
-│   └── package.json
-├── ios/                     # iOS native integration
-│   └── RNBridge/
-│       ├── RNBridgeManager.swift         # Bridge singleton manager
-│       ├── RNBridgeViewController.swift  # View controller for RN views
-│       ├── BrownfieldBridgeModule.swift  # Native module for RN→Native
-│       └── BrownfieldBridgeModule.m      # Objective-C bridge
-└── android/                 # Android native integration
-    └── app/src/main/java/com/brownfield/rnbridge/
-        ├── RNBridgeManager.kt        # Bridge singleton manager
-        ├── RNBridgeActivity.kt       # Activity for hosting RN views
-        ├── RNBridgeView.kt           # Custom view for embedding RN
-        ├── BrownfieldBridgeModule.kt # Native module for RN→Native
-        └── BrownfieldBridgePackage.kt
+MyRNFramework/
+├── android/
+│   ├── app/
+│   │   ├── build.gradle
+│   │   └── src/main/java/com/myrnframework/
+│   │       ├── MainActivity.kt
+│   │       ├── MainApplication.kt
+│   │       ├── NativeModule.kt
+│   │       └── NativeModulePackage.kt
+│   ├── build.gradle
+│   └── settings.gradle
+├── ios/
+│   ├── MyRNFramework/
+│   │   ├── AppDelegate.swift
+│   │   ├── ReactNativeView.swift
+│   │   ├── NativeModule.swift
+│   │   └── NativeModule.m
+│   └── Podfile
+├── src/
+│   ├── App.tsx
+│   └── index.ts
+├── package.json
+├── metro.config.js
+├── app.json
+├── tsconfig.json
+└── index.ts
 ```
 
-## Getting Started
+## Initial Setup
 
-### 1. React Native Bundle Setup
+### 1. Install Dependencies
 
 ```bash
-cd react-native-bundle
+cd MyRNFramework
 npm install
 ```
 
-### 2. Building the JavaScript Bundle
+### 2. iOS Setup
 
-For iOS:
 ```bash
-npm run bundle:ios
+cd ios
+pod install
 ```
 
-For Android:
+### 3. Android Setup
+
 ```bash
-npm run bundle:android
+cd android
+./gradlew build
+```
+
+## Configuration Files
+
+### app.json
+
+```json
+{
+  "name": "MyRNFramework",
+  "displayName": "MyRNFramework"
+}
+```
+
+### metro.config.js
+
+```javascript
+const {getDefaultConfig} = require('@react-native/metro-config');
+
+module.exports = (async () => {
+  const defaultConfig = await getDefaultConfig(__dirname);
+  return {
+    ...defaultConfig,
+    resolver: {
+      ...defaultConfig.resolver,
+      sourceExts: [...defaultConfig.resolver.sourceExts, 'tsx', 'ts'],
+    },
+  };
+})();
+```
+
+### package.json Scripts
+
+```json
+{
+  "scripts": {
+    "start": "react-native start",
+    "package:ios": "rock package:ios",
+    "package:android": "rock package:aar"
+  }
+}
 ```
 
 ## iOS Integration
 
-### Setup
+### 1. Package as XCFramework
 
-1. Add React Native dependencies to your Podfile:
-
-```ruby
-require_relative '../react-native-bundle/node_modules/react-native/scripts/react_native_pods'
-
-target 'YourApp' do
-  use_react_native!
-end
+```bash
+npm run package:ios
 ```
 
-2. Copy the `ios/RNBridge` folder to your Xcode project.
+This creates an XCFramework that can be distributed and integrated into any iOS project.
 
-3. Add the generated `main.jsbundle` to your app bundle.
+### 2. Add to Xcode Project
 
-### Usage
+1. Drag the XCFramework into your Xcode project
+2. Ensure it's added to "Embed & Sign" in your target's frameworks
 
-Initialize the bridge in your AppDelegate:
+### 3. Initialize React Native
+
+Update your AppDelegate using the modern `RCTReactNativeFactory` pattern:
 
 ```swift
 import UIKit
+import React
+import React_RCTAppDelegate
 
-@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    var reactNativeFactory: RCTReactNativeFactory?
+    
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
         
-        // For development (Metro bundler)
-        RNBridgeManager.shared.initialize(
-            source: .metro(host: "localhost", port: 8081),
-            launchOptions: launchOptions
-        )
-        
-        // For production (bundled JS)
-        // RNBridgeManager.shared.initialize(
-        //     source: .localBundle(filename: "main"),
-        //     launchOptions: launchOptions
-        // )
+        let delegate = ReactNativeDelegate()
+        delegate.dependencyProvider = RCTAppDependencyProvider()
+        reactNativeFactory = RCTReactNativeFactory(delegate: delegate)
         
         return true
     }
 }
-```
 
-Present a React Native screen:
-
-```swift
-// Push onto navigation stack
-let rnViewController = RNBridgeViewController(
-    moduleName: "BrownfieldScreen",
-    initialProperties: ["title": "My RN Screen", "message": "Hello from native!"]
-)
-navigationController?.pushViewController(rnViewController, animated: true)
-
-// Or present modally
-present(rnViewController, animated: true)
-```
-
-Handle navigation callbacks from React Native:
-
-```swift
-class MyViewController: UIViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleNavigateBack),
-            name: BrownfieldBridgeModule.navigateBackNotification,
-            object: nil
-        )
-    }
+class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+    var dependencyProvider: RCTAppDependencyProvider?
     
-    @objc func handleNavigateBack() {
-        navigationController?.popViewController(animated: true)
+    override func sourceURL(for bridge: RCTBridge) -> URL? {
+        #if DEBUG
+        return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+        #else
+        return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+        #endif
     }
 }
+```
+
+### 4. SwiftUI Integration
+
+Use `UIViewRepresentable` to embed React Native views in SwiftUI:
+
+```swift
+import SwiftUI
+import React
+
+struct ReactNativeView: UIViewRepresentable {
+    let moduleName: String
+    var initialProperties: [AnyHashable: Any]?
+    
+    func makeUIView(context: Context) -> UIView {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+              let factory = appDelegate.reactNativeFactory else {
+            return UIView()
+        }
+        
+        return factory.rootViewFactory.view(
+            withModuleName: moduleName,
+            initialProperties: initialProperties
+        ) ?? UIView()
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+// Usage in SwiftUI
+struct ContentView: View {
+    var body: some View {
+        ReactNativeView(
+            moduleName: "MyRNFramework",
+            initialProperties: ["greeting": "Hello from SwiftUI!"]
+        )
+    }
+}
+```
+
+### 5. UIKit Integration
+
+Present React Native views in UIKit:
+
+```swift
+let rootView = appDelegate.reactNativeFactory?.rootViewFactory.view(
+    withModuleName: "MyRNFramework",
+    initialProperties: nil
+)
+
+let viewController = UIViewController()
+viewController.view = rootView
+navigationController?.pushViewController(viewController, animated: true)
 ```
 
 ## Android Integration
 
-### Setup
+### 1. Package as AAR
 
-1. Add React Native dependencies to your `build.gradle`:
+```bash
+npm run package:android
+```
+
+This creates an AAR file that can be distributed and integrated into any Android project.
+
+### 2. Add to Gradle Project
+
+Add the AAR to your project's dependencies:
 
 ```groovy
 dependencies {
+    implementation files('libs/myrnframework.aar')
     implementation "com.facebook.react:react-android"
     implementation "com.facebook.react:hermes-android"
+    implementation "com.callstack.reactnativeshared:react-native-brownfield-shared:latest.release"
 }
 ```
 
-2. Copy the `android/app/src/main/java/com/brownfield/rnbridge` folder to your project.
+### 3. Initialize React Native
 
-3. Copy the bundled JS to `app/src/main/assets/index.android.bundle`.
-
-### Usage
-
-Initialize the bridge in your Application class:
+Use `ReactNativeBrownfieldShared` for initialization:
 
 ```kotlin
-class MyApplication : Application() {
+import android.app.Application
+import com.callstack.reactnativeshared.ReactNativeBrownfieldShared
+
+class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         
-        RNBridgeManager.initialize(this, RNBridgeManager.BridgeConfig(
-            useDeveloperSupport = BuildConfig.DEBUG,
-            jsBundleAsset = "index.android.bundle"
-        ))
+        ReactNativeBrownfieldShared.startReactNative(
+            application = this,
+            bundleName = "index.android.bundle"
+        )
     }
 }
 ```
 
-Launch a React Native Activity:
+### 4. Jetpack Compose Integration
+
+Use `AndroidView` to embed React Native in Compose:
 
 ```kotlin
-val intent = Intent(this, RNBridgeActivity::class.java).apply {
-    putExtra(RNBridgeActivity.EXTRA_MODULE_NAME, "BrownfieldScreen")
-    putExtra(RNBridgeActivity.EXTRA_INITIAL_PROPS, bundleOf(
-        "title" to "My RN Screen",
-        "message" to "Hello from native!"
-    ))
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
+import com.callstack.reactnativeshared.ReactNativeBrownfieldShared
+import com.facebook.react.ReactRootView
+
+@Composable
+fun ReactNativeScreen(
+    moduleName: String,
+    initialProperties: Map<String, Any>? = null
+) {
+    AndroidView(
+        factory = { context ->
+            ReactRootView(context).apply {
+                val bundle = initialProperties?.let { props ->
+                    android.os.Bundle().apply {
+                        props.forEach { (key, value) ->
+                            when (value) {
+                                is String -> putString(key, value)
+                                is Int -> putInt(key, value)
+                                is Boolean -> putBoolean(key, value)
+                            }
+                        }
+                    }
+                }
+                
+                startReactApplication(
+                    ReactNativeBrownfieldShared.getReactInstanceManager(),
+                    moduleName,
+                    bundle
+                )
+            }
+        },
+        modifier = Modifier.fillMaxSize()
+    )
 }
-startActivity(intent)
+
+// Usage
+@Composable
+fun MainScreen() {
+    ReactNativeScreen(
+        moduleName = "MyRNFramework",
+        initialProperties = mapOf("greeting" to "Hello from Compose!")
+    )
+}
 ```
 
-Embed React Native in an existing layout:
+### 5. Activity-based Integration
+
+For traditional Activity-based integration:
 
 ```kotlin
-val rnView = RNBridgeView(this).apply {
-    setModuleName("SharedFeature")
-    setInitialProps(bundleOf("featureName" to "Todo List"))
-    startReactApplication()
-}
-container.addView(rnView)
-```
-
-Handle navigation callbacks:
-
-```kotlin
-class MyActivity : AppCompatActivity() {
-    private val navigateBackReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            finish()
-        }
-    }
+class ReactNativeActivity : AppCompatActivity() {
+    private var reactRootView: ReactRootView? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-            navigateBackReceiver,
-            IntentFilter(BrownfieldBridgeModule.ACTION_NAVIGATE_BACK)
-        )
+        reactRootView = ReactRootView(this).apply {
+            startReactApplication(
+                ReactNativeBrownfieldShared.getReactInstanceManager(),
+                "MyRNFramework",
+                null
+            )
+        }
+        
+        setContentView(reactRootView)
     }
     
     override fun onDestroy() {
         super.onDestroy()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(navigateBackReceiver)
+        reactRootView?.unmountReactApplication()
     }
 }
 ```
 
-## React Native Components
+## Sample React Native Code
 
-### BrownfieldScreen
+### src/App.tsx
 
-A sample screen component demonstrating brownfield integration features:
-- Receives initial properties from native code
-- Interactive counter UI
-- Platform detection
-- Native navigation callback
+```typescript
+import React, {useState, useCallback} from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  TextInput,
+  ScrollView,
+} from 'react-native';
 
-### SharedFeature
+const App: React.FC = () => {
+  const [count, setCount] = useState<number>(0);
+  const [name, setName] = useState<string>('');
+  const [greeting, setGreeting] = useState<string>('');
 
-A reusable todo list component showcasing:
-- Code sharing across multiple native apps
-- Bidirectional data communication
-- Complex UI interactions
+  const handleIncrement = useCallback(() => setCount(prev => prev + 1), []);
+  const handleDecrement = useCallback(() => setCount(prev => prev - 1), []);
+  const handleReset = useCallback(() => setCount(0), []);
+  
+  const handleGreet = useCallback(() => {
+    if (name.trim()) {
+      setGreeting(`Hello, ${name.trim()}!`);
+    }
+  }, [name]);
 
-## Communication Bridge
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Counter Demo */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Counter Demo</Text>
+          <Text style={styles.counterValue}>{count}</Text>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.button} onPress={handleDecrement}>
+              <Text style={styles.buttonText}>−</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleReset}>
+              <Text style={styles.buttonText}>Reset</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleIncrement}>
+              <Text style={styles.buttonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-The `BrownfieldBridge` native module provides:
+        {/* Input Demo */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Input Demo</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your name..."
+            value={name}
+            onChangeText={setName}
+          />
+          <TouchableOpacity style={styles.button} onPress={handleGreet}>
+            <Text style={styles.buttonText}>Say Hello</Text>
+          </TouchableOpacity>
+          {greeting && <Text style={styles.greeting}>{greeting}</Text>}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
-- `navigateBack()` - Request native navigation back
-- `onDataChange(data)` - Notify native of data changes
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F5F5F5' },
+  content: { padding: 16 },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardTitle: { fontSize: 20, fontWeight: '600', marginBottom: 16 },
+  counterValue: { fontSize: 48, fontWeight: 'bold', textAlign: 'center' },
+  buttonRow: { flexDirection: 'row', justifyContent: 'center', gap: 12 },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  buttonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '600' },
+  input: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  greeting: { marginTop: 16, fontSize: 16, color: '#34C759' },
+});
 
-Usage in React Native:
-
-```javascript
-import { NativeModules } from 'react-native';
-
-// Navigate back to native
-NativeModules.BrownfieldBridge.navigateBack();
-
-// Send data to native
-NativeModules.BrownfieldBridge.onDataChange({ items: [...] });
+export default App;
 ```
 
-## Development
+## Native Module Bridge Examples
 
-### Running the Metro Bundler
+### iOS Native Module (Swift)
+
+```swift
+// NativeModule.swift
+@objc(NativeModule)
+class NativeModule: NSObject {
+    
+    @objc static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+    
+    @objc func showNativeAlert(_ message: String) {
+        DispatchQueue.main.async {
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let rootViewController = windowScene.windows.first?.rootViewController else {
+                return
+            }
+            
+            let alert = UIAlertController(
+                title: "Native Alert",
+                message: message,
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            rootViewController.present(alert, animated: true)
+        }
+    }
+    
+    @objc func getDeviceInfo(
+        _ resolve: @escaping RCTPromiseResolveBlock,
+        rejecter reject: @escaping RCTPromiseRejectBlock
+    ) {
+        let device = UIDevice.current
+        resolve([
+            "name": device.name,
+            "model": device.model,
+            "systemVersion": device.systemVersion
+        ])
+    }
+}
+```
+
+```objc
+// NativeModule.m
+#import <React/RCTBridgeModule.h>
+
+@interface RCT_EXTERN_MODULE(NativeModule, NSObject)
+RCT_EXTERN_METHOD(showNativeAlert:(NSString *)message)
+RCT_EXTERN_METHOD(getDeviceInfo:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+@end
+```
+
+### Android Native Module (Kotlin)
+
+```kotlin
+// NativeModule.kt
+class NativeModule(
+    private val reactContext: ReactApplicationContext
+) : ReactContextBaseJavaModule(reactContext) {
+
+    override fun getName(): String = "NativeModule"
+
+    @ReactMethod
+    fun showNativeAlert(message: String) {
+        reactContext.currentActivity?.runOnUiThread {
+            Toast.makeText(reactContext, message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    @ReactMethod
+    fun getDeviceInfo(promise: Promise) {
+        val deviceInfo = Arguments.createMap().apply {
+            putString("manufacturer", Build.MANUFACTURER)
+            putString("model", Build.MODEL)
+            putInt("sdkVersion", Build.VERSION.SDK_INT)
+        }
+        promise.resolve(deviceInfo)
+    }
+}
+
+// NativeModulePackage.kt
+class NativeModulePackage : ReactPackage {
+    override fun createNativeModules(
+        reactContext: ReactApplicationContext
+    ): List<NativeModule> = listOf(NativeModule(reactContext))
+    
+    override fun createViewManagers(
+        reactContext: ReactApplicationContext
+    ): List<ViewManager<*, *>> = emptyList()
+}
+```
+
+### Using Native Modules in React Native
+
+```typescript
+import { NativeModules } from 'react-native';
+
+const { NativeModule } = NativeModules;
+
+// Show native alert
+NativeModule.showNativeAlert('Hello from React Native!');
+
+// Get device info (async)
+const deviceInfo = await NativeModule.getDeviceInfo();
+console.log(deviceInfo);
+```
+
+## Development & Testing
+
+### Start Metro Bundler
 
 ```bash
-cd react-native-bundle
+cd MyRNFramework
 npm start
 ```
 
-### Testing
+### Run Tests
 
 ```bash
-cd react-native-bundle
 npm test
 ```
 
+### Build for Production
+
+iOS:
+```bash
+npm run bundle:ios
+```
+
+Android:
+```bash
+npm run bundle:android
+```
+
+## Legacy Integration
+
+For projects using the legacy integration pattern, see the following directories:
+
+- `react-native-bundle/` - Legacy JavaScript bundle
+- `ios/RNBridge/` - Legacy iOS bridge components
+- `android/app/` - Legacy Android bridge components
+
 ## Best Practices
 
-1. **Initialize Early**: Call `RNBridgeManager.initialize()` in your app's startup sequence.
-
-2. **Reuse the Bridge**: Use the singleton pattern to avoid creating multiple React Native instances.
-
-3. **Handle Lifecycle**: Properly manage React Native lifecycle in activities/view controllers.
-
-4. **Bundle for Production**: Always use pre-bundled JavaScript for production releases.
-
-5. **Communicate Efficiently**: Use the native bridge for essential communication only.
+1. **Initialize Early**: Initialize React Native in your app's startup sequence
+2. **Reuse Instances**: Use singleton patterns to avoid creating multiple React Native instances
+3. **Handle Lifecycle**: Properly manage React Native lifecycle in activities/view controllers
+4. **Bundle for Production**: Always use pre-bundled JavaScript for production releases
+5. **Use TypeScript**: Leverage TypeScript for type safety in your React Native code
+6. **Test Native Modules**: Write unit tests for native module functionality
 
 ## License
 

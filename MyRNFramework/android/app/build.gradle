@@ -1,0 +1,97 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.facebook.react")
+}
+
+/**
+ * This is the configuration block to customize your React Native Android app.
+ * By default you don't need to apply any configuration, just uncomment the lines you need.
+ */
+react {
+    /* Folders */
+    //   The root of your project, i.e. where "package.json" lives. Default is '..'
+    root = file("../../")
+    //   The folder where the react-native NPM package is. Default is ../node_modules/react-native
+    reactNativeDir = file("../../node_modules/react-native")
+    //   The folder where the react-native Codegen package is. Default is ../node_modules/@react-native/codegen
+    codegenDir = file("../../node_modules/@react-native/codegen")
+    //   The cli.js file which is the React Native CLI entrypoint. Default is ../node_modules/react-native/cli.js
+    cliFile = file("../../node_modules/react-native/cli.js")
+
+    /* Variants */
+    //   The list of variants to enable react-native's bundle task.
+    //   By default, bundleDebugJsAndAssets is skipped as Hermes bundles are handled differently.
+    //   If you are not using Hermes and want to bundle with Metro, uncomment the following line:
+    // bundleIn = ["debug"]
+
+    /* Hermes & Flipper */
+    //   Enable Hermes by default (recommended)
+    hermesEnabled = true
+    //   Enable Flipper for debug builds
+    debuggableVariants = ["debug"]
+}
+
+android {
+    namespace "com.myrnframework"
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId "com.myrnframework"
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+dependencies {
+    // React Native dependencies
+    implementation("com.facebook.react:react-android")
+    implementation("com.facebook.react:hermes-android")
+    
+    // React Native Brownfield integration
+    implementation("com.callstack.reactnativeshared:react-native-brownfield-shared:latest.release")
+    
+    // AndroidX dependencies
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    
+    // Jetpack Compose
+    implementation("androidx.compose.ui:ui:1.6.0")
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.0")
+}
+
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+applyNativeModulesAppBuildGradle(project)
