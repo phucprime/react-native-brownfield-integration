@@ -12,6 +12,8 @@ dist/
 *.aar
 
 # iOS
+MyRNFramework/.rock/
+MyRNFramework/ios/Pods/
 ios/Pods/
 ios/*.xcworkspace
 ios/*.xcodeproj/xcuserdata/
@@ -20,7 +22,7 @@ ios/DerivedData/
 *.ipa
 *.dSYM.zip
 *.dSYM
-
+MyRNFramework/.yarn
 # Android
 android/.gradle/
 android/app/build/
@@ -74,3 +76,5 @@ Thumbs.db
 .expo/
 .expo-shared/
 
+MyRNFramework/ios/.xcode.env.local
+MyRNFramework/.yarn/install-state.gz

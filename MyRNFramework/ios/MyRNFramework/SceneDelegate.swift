@@ -5,8 +5,9 @@
 //  Scene delegate for managing the app's UI lifecycle.
 //
 
-import UIKit
+import ReactBrownfield
 import SwiftUI
+import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -18,12 +19,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options connectionOptions: UIScene.ConnectionOptions
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        
+
         window = UIWindow(windowScene: windowScene)
-        
+
         // Create the SwiftUI content view with React Native embedded
         let contentView = ContentView()
-        
+
         window?.rootViewController = UIHostingController(rootView: contentView)
         window?.makeKeyAndVisible()
     }
